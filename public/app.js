@@ -969,6 +969,7 @@
     if (runState.plannedDuration) {
       $('liveProgress').style.width = Math.min(100, (runState.elapsed / runState.plannedDuration) * 100) + '%';
     }
+    if (runState.dashboardUrl) $('btnK6Dash').href = runState.dashboardUrl;
     initCharts();
     if (runState.ticks && runState.ticks.length && !state.ticks.length) {
       runState.ticks.slice(-MAX_LIVE_POINTS).forEach(pushTick);

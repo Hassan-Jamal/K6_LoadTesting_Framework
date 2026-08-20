@@ -421,11 +421,6 @@ async function commandRun(positional, flags) {
   const store = new Store(dataDir);
 
   heading('Running');
-  if (!quiet) {
-    out(c.grey + '  live k6 dashboard: http://127.0.0.1:' +
-      (process.env.K6_DASHBOARD_PORT || 5665) + '   (Ctrl+C stops the test)' + c.reset);
-    out('');
-  }
 
   return await new Promise((resolve) => {
     let lastLine = '';
@@ -493,7 +488,14 @@ async function commandRun(positional, flags) {
       resolve(result.status === 'failed' || breaches || noTraffic ? 1 : 0);
     });
 
-    runner.start(spec).catch((err) => {
+    runner.start(spec)
+      .then((state) => {
+        if (!quiet) {
+          out(c.grey + '  live k6 dashboard: ' + state.dashboardUrl + '   (Ctrl+C stops the test)' + c.reset);
+          out('');
+        }
+      })
+      .catch((err) => {
       out(c.red + '  Could not start k6: ' + err.message + c.reset);
       resolve(1);
     });

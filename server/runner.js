@@ -10,6 +10,7 @@ const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 const fs = require('fs');
 const http = require('http');
+const net = require('net');
 const path = require('path');
 
 const { generateScript, buildScenario, toDuration } = require('./generator');
@@ -98,6 +99,34 @@ function plannedDurationSeconds(profile) {
   return 0;
 }
 
+/** True if we can bind the port right now. */
+function isPortFree(port) {
+  return new Promise((resolve) => {
+    const probe = net.createServer();
+    probe.once('error', () => resolve(false));
+    probe.once('listening', () => probe.close(() => resolve(true)));
+    probe.listen(port, '127.0.0.1');
+  });
+}
+
+/**
+ * k6 needs two ports of its own (REST control + web dashboard). Hard-coding
+ * them breaks whenever a previous run has not fully released the socket, so
+ * each run takes the preferred port when it is free and an OS-assigned one
+ * otherwise.
+ */
+async function claimPort(preferred) {
+  if (preferred && (await isPortFree(preferred))) return preferred;
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
 function restRequest(port, method, urlPath, body) {
   return new Promise((resolve, reject) => {
     const payload = body ? Buffer.from(JSON.stringify(body)) : null;
@@ -158,7 +187,7 @@ class Runner extends EventEmitter {
         ? Math.round((c.endedAt - c.startedAt) / 1000)
         : Math.round((Date.now() - c.startedAt) / 1000),
       plannedDuration: c.plannedDuration,
-      dashboardUrl: 'http://127.0.0.1:' + this.dashboardPort,
+      dashboardUrl: 'http://127.0.0.1:' + (c.dashboardPort || this.dashboardPort),
       profile: c.profile,
       totals: this.totals(),
       ticks: c.ticks,
@@ -280,6 +309,10 @@ class Runner extends EventEmitter {
     };
     fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8');
 
+    // Claim the ports before spawning so a lingering k6 cannot break this run.
+    const apiPort = await claimPort(this.apiPort);
+    const dashboardPort = await claimPort(this.dashboardPort);
+
     const summaryPath = path.join(dir, 'summary.json');
     const reportPath = path.join(dir, 'k6-dashboard.html');
 
@@ -288,7 +321,7 @@ class Runner extends EventEmitter {
       '--quiet',
       '--no-usage-report',
       '--address',
-      '127.0.0.1:' + this.apiPort,
+      '127.0.0.1:' + apiPort,
       '--summary-export',
       summaryPath,
       '--out',
@@ -299,7 +332,7 @@ class Runner extends EventEmitter {
     ];
 
     const env = Object.assign({}, process.env, {
-      K6_WEB_DASHBOARD_PORT: String(this.dashboardPort),
+      K6_WEB_DASHBOARD_PORT: String(dashboardPort),
       K6_WEB_DASHBOARD_HOST: '127.0.0.1',
       K6_WEB_DASHBOARD_OPEN: 'false',
       K6_WEB_DASHBOARD_PERIOD: '1s',
@@ -318,6 +351,8 @@ class Runner extends EventEmitter {
       child,
       status: 'running',
       paused: false,
+      apiPort,
+      dashboardPort,
       startedAt: Date.now(),
       endedAt: null,
       plannedDuration: plannedDurationSeconds(profile),
@@ -364,6 +399,10 @@ class Runner extends EventEmitter {
       this._finish(-1, err.message);
     });
     child.on('close', (code) => this._finish(code));
+
+    if (apiPort !== this.apiPort || dashboardPort !== this.dashboardPort) {
+      this._log('info', 'Preferred k6 ports were busy; using REST ' + apiPort + ', dashboard ' + dashboardPort);
+    }
 
     this.flushTimer = setInterval(() => this._flush(false), 1000);
     this.emit('start', this.getState());
@@ -695,7 +734,7 @@ class Runner extends EventEmitter {
     c.stopRequested = true;
     this._log('warn', 'Stop requested - asking k6 to end the test gracefully');
     try {
-      await restRequest(this.apiPort, 'PATCH', '/v1/status', {
+      await restRequest(c.apiPort || this.apiPort, 'PATCH', '/v1/status', {
         data: { type: 'status', id: 'default', attributes: { stopped: true } },
       });
     } catch (e) {
