@@ -18,7 +18,9 @@ function varsToObject(list, into = {}) {
   if (!list) return into;
   if (Array.isArray(list)) {
     for (const v of list) {
-      if (!v || v.disabled) continue;
+      // Collections mark entries `disabled: true`; environment exports use
+      // `enabled: false` instead, so both spellings have to be honoured.
+      if (!v || v.disabled || v.enabled === false) continue;
       const key = v.key || v.name;
       if (key) into[key] = v.value == null ? '' : String(v.value);
     }
@@ -232,7 +234,9 @@ function parseCollection(collection, environment) {
     if (typeof s !== 'string') return;
     const re = /\{\{([^}\s]+)\}\}/g;
     let m;
-    while ((m = re.exec(s))) used.add(m[1]);
+    // `{{$randomInt}}` and friends are generated at runtime, so they are not
+    // values anyone needs to supply.
+    while ((m = re.exec(s))) if (!m[1].startsWith('$')) used.add(m[1]);
   };
   for (const r of requests) {
     scan(r.url);
