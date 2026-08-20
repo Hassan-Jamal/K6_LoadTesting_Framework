@@ -1,0 +1,53 @@
+{
+  "name": "k6-load-lab",
+  "version": "1.0.0",
+  "description": "Run any Postman collection as a k6 load test - live ramp charts, HTML reports, and a CLI that exits non-zero when an SLA breaks.",
+  "type": "commonjs",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node bin/k6lab.js ui",
+    "ui": "node bin/k6lab.js ui",
+    "doctor": "node bin/k6lab.js doctor",
+    "demo": "node bin/k6lab.js run examples/sample_postman_collection.json --base-url https://test.k6.io --safe --preset smoke --yes",
+    "postinstall": "node scripts/vendor.js"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.7",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "k6lab": "bin/k6lab.js"
+  },
+  "files": [
+    "bin",
+    "server",
+    "public",
+    "scripts",
+    "examples",
+    "README.md"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "k6",
+    "load-testing",
+    "performance",
+    "postman",
+    "stress-test",
+    "benchmark",
+    "api-testing",
+    "smoke-test",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hassan-Jamal/K6_LoadTesting_Framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hassan-Jamal/K6_LoadTesting_Framework/issues"
+  },
+  "homepage": "https://github.com/Hassan-Jamal/K6_LoadTesting_Framework#readme"
+}

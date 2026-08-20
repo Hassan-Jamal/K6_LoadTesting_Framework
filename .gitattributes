@@ -1,0 +1,9 @@
+* text=auto eol=lf
+
+# The CLI shebang only works with LF endings on macOS and Linux.
+bin/*.js text eol=lf
+*.sh     text eol=lf
+
+# Keep the vendored library and sample data byte-for-byte.
+public/vendor/* binary
+*.json text eol=lf

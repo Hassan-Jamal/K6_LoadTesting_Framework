@@ -1,0 +1,23 @@
+{
+  "collection": "postman_collection.json",
+  "name": "Pocket Coach API - average load",
+
+  "baseUrl": "https://api.your-real-host.com",
+  "variables": {
+    "token": "PASTE_YOUR_BEARER_TOKEN_HERE",
+    "id": "an-existing-conversation-id",
+    "messageId": "an-existing-message-id",
+    "targetUserId": "an-existing-user-id"
+  },
+
+  "preset": "average",
+  "safe": true,
+  "flow": "sequence",
+  "think": [0.5, 1.5],
+
+  "thresholds": {
+    "p95": 800,
+    "errorRate": 1,
+    "checkRate": 99
+  }
+}

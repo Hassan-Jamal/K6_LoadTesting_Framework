@@ -1,0 +1,72 @@
+{
+  "info": {
+    "_postman_id": "8f2b1c44-5a6d-4e1f-9c33-2b7a1d9e4f10",
+    "name": "Sample API journey",
+    "description": "A small collection you can load into k6 Load Lab to see the whole flow working. It hits the public k6 test site.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://test.k6.io" },
+    { "key": "username", "value": "test" },
+    { "key": "password", "value": "test" }
+  ],
+  "item": [
+    {
+      "name": "Home page",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "text/html" }],
+        "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"], "path": [""] }
+      }
+    },
+    {
+      "name": "Public endpoints",
+      "item": [
+        {
+          "name": "Contacts page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/contacts.php", "host": ["{{base_url}}"], "path": ["contacts.php"] }
+          }
+        },
+        {
+          "name": "News page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/news.php", "host": ["{{base_url}}"], "path": ["news.php"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login (captures a token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"access_token\", pm.response.json().access);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/token/login/",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "token", "login", ""]
+        }
+      }
+    }
+  ]
+}

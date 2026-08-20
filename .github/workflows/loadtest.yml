@@ -1,0 +1,51 @@
+# Example: run the load test on every push and fail the build when an SLA breaks.
+# Copy this into the repo that owns the API, not into k6-load-lab itself.
+name: Load test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1' # Mondays, 03:00 UTC
+  push:
+    branches: [main]
+
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update && sudo apt-get install -y k6
+
+      - name: Install k6 Load Lab
+        run: |
+          git clone --depth 1 https://github.com/Hassan-Jamal/K6_LoadTesting_Framework.git /tmp/k6lab
+          cd /tmp/k6lab && npm install --omit=dev && npm link
+
+      - name: Run the load test
+        # Exits non-zero if any threshold is breached, which fails the job.
+        run: |
+          k6lab run postman_collection.json \
+            --base-url "${{ vars.API_BASE_URL }}" \
+            --token "${{ secrets.API_TOKEN }}" \
+            --preset average \
+            --safe --yes --quiet \
+            --p95 800 --error-rate 1
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-report
+          path: k6lab-runs/**/report.html

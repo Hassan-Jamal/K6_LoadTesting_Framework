@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>k6 Load Lab</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#9889;</text></svg>" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span> k6 Load Lab <small>load testing console</small></div>
+  <nav class="tabs">
+    <button class="tab active" data-view="requests">Requests <span class="pill" id="reqCount">0</span></button>
+    <button class="tab" data-view="profile">Load profile</button>
+    <button class="tab" data-view="live">Live</button>
+    <button class="tab" data-view="reports">Reports <span class="pill" id="runCount">0</span></button>
+  </nav>
+  <div class="topbar-right">
+    <div class="env-chip" id="k6Chip"><span class="led"></span><span id="k6ChipText">checking k6...</span></div>
+    <button class="btn primary" id="btnStartTop">Start test</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ============================ REQUESTS ============================ -->
+  <section class="view active" data-view="requests">
+    <div class="grid-2">
+      <div class="panel">
+        <header><h2>Import a Postman collection</h2><span class="hint">v2.0 / v2.1</span></header>
+        <div class="body">
+          <div class="dropzone" id="dropzone">
+            <strong>Drop postman_collection.json here</strong>
+            <span>or click to browse &middot; folders, auth and variables are all read</span>
+          </div>
+          <input type="file" id="fileCollection" accept=".json,application/json" hidden />
+          <input type="file" id="fileEnvironment" accept=".json,application/json" hidden />
+
+          <div class="row" style="margin-top:14px">
+            <button class="btn sm" id="btnPickEnv">Add environment file</button>
+            <span class="muted" id="envName" style="align-self:center;font-size:12.5px"></span>
+          </div>
+
+          <label class="field" style="margin-top:16px">
+            <span>Or load from a path on this machine</span>
+            <div class="row">
+              <input type="text" id="collectionPath" placeholder="C:\path\to\postman_collection.json" style="flex:1" />
+              <button class="btn" id="btnLoadPath">Load</button>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <header><h2>Add a single API</h2><span class="hint">no collection needed</span></header>
+        <div class="body">
+          <div class="row">
+            <label class="field" style="width:120px"><span>Method</span>
+              <select id="sMethod">
+                <option>GET</option><option>POST</option><option>PUT</option>
+                <option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
+              </select>
+            </label>
+            <label class="field col"><span>URL</span>
+              <input type="text" id="sUrl" placeholder="https://api.example.com/v1/users?page=1" />
+            </label>
+          </div>
+          <div class="row">
+            <label class="field col"><span>Name <em class="sub">optional</em></span>
+              <input type="text" id="sName" placeholder="List users" />
+            </label>
+            <label class="field" style="width:150px"><span>Expected status</span>
+              <input type="text" id="sExpect" value="2xx" />
+            </label>
+          </div>
+          <div class="row">
+            <label class="field col"><span>Headers <em class="sub">one per line, Key: value</em></span>
+              <textarea id="sHeaders" placeholder="Content-Type: application/json&#10;X-Api-Key: {{apiKey}}"></textarea>
+            </label>
+            <label class="field col"><span>Body <em class="sub">raw / JSON</em></span>
+              <textarea id="sBody" placeholder='{"email":"{{$randomEmail}}"}'></textarea>
+            </label>
+          </div>
+          <div class="row">
+            <label class="field" style="width:150px"><span>Auth</span>
+              <select id="sAuthType">
+                <option value="">None</option>
+                <option value="bearer">Bearer token</option>
+                <option value="basic">Basic</option>
+                <option value="apikey">API key</option>
+              </select>
+            </label>
+            <label class="field col" id="sAuthFields"><span>Auth value</span>
+              <input type="text" id="sAuthA" placeholder="token" />
+            </label>
+            <label class="field col" id="sAuthBWrap" style="display:none"><span>&nbsp;</span>
+              <input type="text" id="sAuthB" placeholder="password / key name" />
+            </label>
+          </div>
+          <button class="btn primary" id="btnAddSingle">Add request</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header>
+        <h2>Requests</h2>
+        <span class="hint" id="reqSummary">nothing loaded yet</span>
+        <span class="spacer"></span>
+        <button class="btn sm" id="btnSafeMode" title="Keep only GET/HEAD/OPTIONS requests">Safe mode</button>
+        <button class="btn sm" id="btnSelectAll">Select all</button>
+        <button class="btn sm" id="btnSelectNone">Select none</button>
+        <button class="btn sm danger" id="btnClearRequests">Clear</button>
+      </header>
+      <div class="body tight">
+        <div class="table-wrap">
+          <table id="requestTable">
+            <thead>
+              <tr>
+                <th style="width:38px"></th>
+                <th style="width:70px">Method</th>
+                <th>Name</th>
+                <th>URL</th>
+                <th style="width:120px">Expect</th>
+                <th class="num" style="width:80px">Weight</th>
+                <th class="num" style="width:110px">p95 SLA (ms)</th>
+                <th style="width:60px"></th>
+              </tr>
+            </thead>
+            <tbody id="requestBody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="requestEmpty">Import a collection or add a single API to get started.</div>
+        <div id="reqWarnings"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header><h2>Variables</h2><span class="hint">values for <code>{{placeholders}}</code> used by your requests</span>
+        <span class="spacer"></span><button class="btn sm" id="btnAddVar">Add variable</button>
+      </header>
+      <div class="body">
+        <div id="varList"></div>
+        <p class="muted" style="font-size:12.5px;margin:10px 0 0">
+          Dynamic values are also available inside any URL, header or body:
+          <code>{{$randomInt}}</code>, <code>{{$guid}}</code>, <code>{{$timestamp}}</code>,
+          <code>{{$randomEmail}}</code>, <code>{{$vu}}</code>, <code>{{$iter}}</code>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PROFILE ============================ -->
+  <section class="view" data-view="profile">
+    <div class="grid-2">
+      <div>
+        <div class="panel">
+          <header><h2>Test shape</h2><span class="hint">pick a preset, then tune it</span></header>
+          <div class="body">
+            <div class="preset-row" id="presetRow"></div>
+
+            <label class="field"><span>Test name</span>
+              <input type="text" id="pName" value="Load test" />
+            </label>
+
+            <label class="field"><span>Executor</span>
+              <select id="pExecutor">
+                <option value="ramping-vus">Ramping VUs &mdash; ramp users up and down through stages</option>
+                <option value="constant-vus">Constant VUs &mdash; fixed users for a fixed time</option>
+                <option value="ramping-arrival-rate">Ramping arrival rate &mdash; ramp requests/sec</option>
+                <option value="constant-arrival-rate">Constant arrival rate &mdash; fixed requests/sec</option>
+                <option value="shared-iterations">Shared iterations &mdash; N iterations split across VUs</option>
+                <option value="per-vu-iterations">Per-VU iterations &mdash; N iterations each</option>
+              </select>
+            </label>
+
+            <div id="stageSection">
+              <label class="field"><span>Stages <em class="sub">duration then target</em></span></label>
+              <div id="stageList"></div>
+              <button class="btn sm" id="btnAddStage">Add stage</button>
+            </div>
+
+            <div class="row" id="simpleSection" style="display:none">
+              <label class="field col"><span id="vusLabel">Virtual users</span>
+                <input type="number" id="pVus" value="10" min="1" />
+              </label>
+              <label class="field col" id="rateWrap" style="display:none"><span>Requests per second</span>
+                <input type="number" id="pRate" value="50" min="1" />
+              </label>
+              <label class="field col"><span>Duration</span>
+                <input type="text" id="pDuration" value="1m" />
+              </label>
+              <label class="field col" id="iterWrap" style="display:none"><span>Iterations</span>
+                <input type="number" id="pIterations" value="100" min="1" />
+              </label>
+            </div>
+
+            <div class="row" id="arrivalSection" style="display:none">
+              <label class="field col"><span>Pre-allocated VUs</span>
+                <input type="number" id="pPreAllocatedVUs" value="50" min="1" />
+              </label>
+              <label class="field col"><span>Max VUs</span>
+                <input type="number" id="pMaxVUs" value="200" min="1" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <header><h2>Behaviour</h2></header>
+          <div class="body">
+            <div class="row">
+              <label class="field col"><span>Flow</span>
+                <select id="pFlow">
+                  <option value="sequence">Sequence &mdash; each user walks every request in order</option>
+                  <option value="random">Random &mdash; one weighted request per iteration</option>
+                </select>
+              </label>
+            </div>
+            <div class="row">
+              <label class="field col"><span>Think time min (s)</span>
+                <input type="number" id="pThinkMin" value="0.5" step="0.1" min="0" />
+              </label>
+              <label class="field col"><span>Think time max (s)</span>
+                <input type="number" id="pThinkMax" value="1.5" step="0.1" min="0" />
+              </label>
+              <label class="field col"><span>Request timeout</span>
+                <input type="text" id="pTimeout" value="60s" />
+              </label>
+              <label class="field col"><span>Global RPS cap <em class="sub">0 = off</em></span>
+                <input type="number" id="pRpsLimit" value="0" min="0" />
+              </label>
+            </div>
+            <div class="row" style="gap:20px;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pStopOnError" /> Abort the iteration on first failure</label>
+              <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pNoReuse" /> Disable connection reuse</label>
+              <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pInsecure" checked /> Skip TLS verification</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <header><h2>Pass / fail thresholds</h2><span class="hint">these decide the run verdict</span></header>
+          <div class="body">
+            <div class="row">
+              <label class="field col"><span>p95 latency &lt; (ms)</span><input type="number" id="thP95" value="800" min="0" /></label>
+              <label class="field col"><span>p99 latency &lt; (ms)</span><input type="number" id="thP99" placeholder="optional" /></label>
+              <label class="field col"><span>Error rate &lt; (%)</span><input type="number" id="thErrorRate" value="1" step="0.1" min="0" /></label>
+              <label class="field col"><span>Checks passing &gt; (%)</span><input type="number" id="thCheckRate" value="99" step="0.1" min="0" /></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <header><h2>Ramp preview</h2><span class="hint" id="rampSummary"></span></header>
+          <div class="body">
+            <div class="ramp-preview"><svg id="rampSvg" viewBox="0 0 600 170" preserveAspectRatio="none"></svg></div>
+            <div class="row" style="margin-top:14px">
+              <div class="col"><div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.08em">Planned duration</div>
+                <div style="font-size:20px;font-weight:650" id="plannedDuration">-</div></div>
+              <div class="col"><div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.08em">Peak load</div>
+                <div style="font-size:20px;font-weight:650" id="peakLoad">-</div></div>
+              <div class="col"><div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.08em">Requests selected</div>
+                <div style="font-size:20px;font-weight:650" id="selectedCount">0</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <header><h2>Launch</h2></header>
+          <div class="body">
+            <p class="muted" style="margin-top:0;font-size:13px">
+              The generated k6 script is saved with every run, so any test here can be replayed
+              from the command line with <code>k6 run script.js</code>.
+            </p>
+            <div class="row">
+              <button class="btn lg primary" id="btnStart">Start load test</button>
+              <button class="btn lg" id="btnPreview">Preview k6 script</button>
+            </div>
+            <div id="startError" class="bad-text" style="margin-top:12px;font-size:13px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== LIVE ============================== -->
+  <section class="view" data-view="live">
+    <div class="live-header">
+      <div style="min-width:260px;flex:1">
+        <h2 id="liveName">No test running</h2>
+        <div class="muted" style="font-size:12.5px" id="liveSub">Start a test from the Load profile tab.</div>
+        <div class="progress"><div id="liveProgress"></div></div>
+      </div>
+      <div class="control-bar">
+        <span class="badge muted" id="liveStatus">idle</span>
+        <button class="btn sm danger" id="btnStop" disabled>Stop test</button>
+        <a class="btn sm ghost" id="btnK6Dash" href="http://127.0.0.1:5665" target="_blank" rel="noopener">k6 dashboard</a>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="label">Virtual users</div><div class="value" id="kVus">0</div></div>
+      <div class="kpi"><div class="label">Requests / sec</div><div class="value" id="kRps">0</div></div>
+      <div class="kpi"><div class="label">p95 latency</div><div class="value" id="kP95">0<span> ms</span></div></div>
+      <div class="kpi"><div class="label">Avg latency</div><div class="value" id="kAvg">0<span> ms</span></div></div>
+      <div class="kpi"><div class="label">Error rate</div><div class="value" id="kErr">0<span> %</span></div></div>
+      <div class="kpi"><div class="label">Total requests</div><div class="value sm" id="kReqs">0</div></div>
+      <div class="kpi"><div class="label">Checks</div><div class="value sm" id="kChecks">0 / 0</div></div>
+      <div class="kpi"><div class="label">Data received</div><div class="value sm" id="kData">0 B</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="chart-card"><h3>Virtual users &amp; throughput</h3><div class="chart-box tall"><canvas id="chartLoad"></canvas></div></div>
+      <div class="chart-card"><h3>Response time</h3><div class="chart-box tall"><canvas id="chartLatency"></canvas></div></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="chart-card"><h3>Error rate</h3><div class="chart-box"><canvas id="chartErrors"></canvas></div></div>
+      <div class="chart-card"><h3>HTTP status codes</h3><div class="chart-box"><canvas id="chartStatus"></canvas></div></div>
+    </div>
+
+    <div class="panel">
+      <header><h2>Per-endpoint live breakdown</h2></header>
+      <div class="body tight">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Endpoint</th><th class="num">Requests</th><th class="num">Failed</th><th class="num">Error %</th>
+              <th class="num">Avg</th><th class="num">p90</th><th class="num">p95</th><th class="num">p99</th><th class="num">Max</th>
+            </tr></thead>
+            <tbody id="liveEndpoints"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <header><h2>Failures</h2></header>
+        <div class="body tight">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Endpoint</th><th>Status</th><th>Error</th><th class="num">Count</th></tr></thead>
+              <tbody id="liveErrors"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <header><h2>k6 output</h2></header>
+        <div class="body"><div class="console" id="liveLog"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ REPORTS ============================ -->
+  <section class="view" data-view="reports">
+    <div class="panel">
+      <header><h2>Test runs</h2><span class="hint">every run keeps its script, metrics and reports</span>
+        <span class="spacer"></span><button class="btn sm" id="btnRefreshRuns">Refresh</button></header>
+      <div class="body tight">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Test</th><th>Status</th><th>Started</th><th class="num">Duration</th>
+              <th class="num">Requests</th><th class="num">Avg RPS</th><th class="num">Error %</th>
+              <th class="num">p95</th><th>SLA</th><th style="width:250px">Reports</th>
+            </tr></thead>
+            <tbody id="runsBody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="runsEmpty">No runs yet.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <header>
+      <h3 id="modalTitle">Generated k6 script</h3>
+      <span class="spacer"></span>
+      <button class="btn sm" id="btnCopyScript">Copy</button>
+      <button class="btn sm" id="btnCloseModal">Close</button>
+    </header>
+    <div class="content"><pre id="modalBody"></pre></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="/vendor/chart.umd.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

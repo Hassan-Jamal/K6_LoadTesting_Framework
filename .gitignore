@@ -1,0 +1,11 @@
+node_modules/
+
+# Load-test output: one directory per run
+k6lab-runs/
+data/
+
+# Vendored at install time by scripts/vendor.js
+public/vendor/
+
+*.log
+.DS_Store
