@@ -1,13 +1,11 @@
 {
   "collection": "postman_collection.json",
-  "name": "Pocket Coach API - average load",
+  "name": "My API - average load",
 
-  "baseUrl": "https://api.your-real-host.com",
+  "baseUrl": "https://api.example.com",
   "variables": {
     "token": "PASTE_YOUR_BEARER_TOKEN_HERE",
-    "id": "an-existing-conversation-id",
-    "messageId": "an-existing-message-id",
-    "targetUserId": "an-existing-user-id"
+    "id": "an-existing-record-id"
   },
 
   "preset": "average",
