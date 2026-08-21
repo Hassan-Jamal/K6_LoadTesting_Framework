@@ -9,3 +9,4 @@ public/vendor/
 
 *.log
 .DS_Store
+benchmarks/results/jmeter-native-dashboard/
