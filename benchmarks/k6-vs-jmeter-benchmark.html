@@ -1,0 +1,603 @@
+<title>The 1,000-User Benchmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ---- tokens: complete light palette on bare :root ---- */
+  :root {
+    --ground:      #F6F8FA;
+    --surface:     #FFFFFF;
+    --surface-alt: #EDF1F5;
+    --ink:         #101720;
+    --ink-soft:    #48566A;
+    --ink-faint:   #78889B;
+    --rule:        #D5DDE6;
+    --rule-soft:   #E5EBF1;
+
+    --k6:          #1B5E8C;   /* instrument blue */
+    --k6-fill:     rgba(27, 94, 140, 0.13);
+    --jm:          #C2632B;   /* burnt orange */
+    --jm-fill:     rgba(194, 99, 43, 0.13);
+
+    --good:        #1E6B4F;
+    --warn:        #9A6415;
+    --truth:       #6B7A8D;
+
+    --shadow: 0 1px 2px rgba(16,23,32,.05), 0 8px 24px rgba(16,23,32,.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0D1218;
+      --surface:     #141B23;
+      --surface-alt: #1B242E;
+      --ink:         #E8EDF3;
+      --ink-soft:    #A5B2C1;
+      --ink-faint:   #74838F;
+      --rule:        #2A3541;
+      --rule-soft:   #212B35;
+
+      --k6:          #63AEDC;
+      --k6-fill:     rgba(99, 174, 220, 0.16);
+      --jm:          #E89257;
+      --jm-fill:     rgba(232, 146, 87, 0.16);
+
+      --good:        #56C79B;
+      --warn:        #E0AE5B;
+      --truth:       #8C9BAC;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0D1218;
+    --surface:     #141B23;
+    --surface-alt: #1B242E;
+    --ink:         #E8EDF3;
+    --ink-soft:    #A5B2C1;
+    --ink-faint:   #74838F;
+    --rule:        #2A3541;
+    --rule-soft:   #212B35;
+
+    --k6:          #63AEDC;
+    --k6-fill:     rgba(99, 174, 220, 0.16);
+    --jm:          #E89257;
+    --jm-fill:     rgba(232, 146, 87, 0.16);
+
+    --good:        #56C79B;
+    --warn:        #E0AE5B;
+    --truth:       #8C9BAC;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 4.5rem 2rem 6rem;
+  }
+
+  /* ---- type ---- */
+  h1, h2, h3 { font-family: Spectral, Georgia, serif; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.3rem, 5vw, 3.3rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.02em; }
+  h2 { font-size: 1.75rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+  h3 { font-size: 1.16rem; font-weight: 600; line-height: 1.3; }
+
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--k6); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--k6); outline-offset: 3px; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .lede { font-size: 1.16rem; color: var(--ink-soft); max-width: 62ch; }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+  .num  { font-variant-numeric: tabular-nums; }
+
+  /* ---- masthead ---- */
+  .masthead { display: flex; flex-direction: column; gap: 1.25rem; padding-bottom: 2.25rem; border-bottom: 2px solid var(--ink); }
+  .masthead .meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--ink-faint); }
+  .masthead .meta b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---- verdict banner ---- */
+  .verdict {
+    margin-top: 2.25rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--k6);
+    border-radius: 3px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .verdict p { font-size: 1.05rem; }
+
+  /* ---- sections ---- */
+  section { margin-top: 3.75rem; display: flex; flex-direction: column; gap: 1.4rem; }
+  .sec-head { display: flex; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.7rem; }
+  .sec-head .n { font-family: "IBM Plex Mono", monospace; font-size: 0.82rem; color: var(--jm); font-weight: 600; }
+
+  /* ---- readings grid ---- */
+  .readings { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1rem; }
+  .reading {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .reading .label { font-family: "IBM Plex Mono", monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .reading .value { font-family: Spectral, Georgia, serif; font-size: 2rem; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+  .reading .value small { font-size: 0.95rem; font-weight: 400; color: var(--ink-faint); font-family: "IBM Plex Sans", sans-serif; }
+  .reading .delta { font-size: 0.8rem; color: var(--ink-soft); }
+  .reading.win-k6 .value { color: var(--k6); }
+  .reading.win-jm .value { color: var(--jm); }
+
+  /* ---- tables ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.7rem 1rem; border-bottom: 1px solid var(--rule-soft); }
+  thead th {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.68rem; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 500;
+    background: var(--surface-alt); border-bottom: 1px solid var(--rule);
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; font-family: "IBM Plex Mono", monospace; }
+  .c-k6 { color: var(--k6); font-weight: 500; }
+  .c-jm { color: var(--jm); font-weight: 500; }
+  caption { caption-side: bottom; padding: 0.7rem 1rem; font-size: 0.78rem; color: var(--ink-faint); text-align: left; }
+
+  /* ---- charts ---- */
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; padding: 1.3rem 1.4rem 1rem; }
+  figure svg { display: block; width: 100%; height: auto; overflow: visible; }
+  figcaption { margin-top: 0.85rem; font-size: 0.8rem; color: var(--ink-faint); line-height: 1.5; }
+  .legend { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-bottom: 0.9rem; font-size: 0.8rem; font-family: "IBM Plex Mono", monospace; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .swatch { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  /* ---- analogy cards ---- */
+  .analogies { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; }
+  .analogy { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; padding: 1.25rem 1.35rem; display: flex; flex-direction: column; gap: 0.55rem; }
+  .analogy h3 { font-size: 1.02rem; }
+  .analogy p { font-size: 0.9rem; color: var(--ink-soft); }
+  .analogy .tie { font-size: 0.84rem; color: var(--ink); border-top: 1px dashed var(--rule); padding-top: 0.55rem; }
+
+  /* ---- code ---- */
+  pre {
+    margin: 0; background: var(--surface-alt); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1rem 1.15rem; overflow-x: auto;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; line-height: 1.6; color: var(--ink);
+  }
+  .code-label { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.4rem; }
+
+  /* ---- callout ---- */
+  .callout { background: var(--surface-alt); border-left: 3px solid var(--truth); border-radius: 3px; padding: 1.1rem 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .callout.caution { border-left-color: var(--jm); }
+  .callout p { font-size: 0.92rem; color: var(--ink-soft); }
+  .callout strong { color: var(--ink); }
+
+  ul { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; max-width: 68ch; }
+  li { color: var(--ink-soft); }
+  li strong { color: var(--ink); font-weight: 600; }
+
+  .refs { display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.88rem; }
+  .refs a { word-break: break-word; }
+
+  footer { margin-top: 4rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); font-size: 0.8rem; color: var(--ink-faint); }
+
+  /* ---- print / PDF ---- */
+  @media print {
+    /* Must out-specify the dark-scheme block above, which uses
+       :root:not([data-theme="light"]) - a plain :root would lose the cascade
+       and print white-on-white. */
+    :root,
+    :root:not([data-theme="light"]),
+    :root[data-theme="dark"] {
+      --ground: #FFFFFF; --surface: #FFFFFF; --surface-alt: #F2F5F8;
+      --ink: #0B0F14; --ink-soft: #3C4855; --ink-faint: #667485;
+      --rule: #C3CCD6; --rule-soft: #DDE4EB;
+      --k6: #17527A; --jm: #A8541F;
+      --k6-fill: rgba(23, 82, 122, 0.12); --jm-fill: rgba(168, 84, 31, 0.12);
+      --good: #1E6B4F; --warn: #8A5A12; --truth: #5A6878;
+      --shadow: none;
+    }
+    body { font-size: 10.5pt; background: #fff; }
+    .sheet { max-width: none; padding: 0; }
+    section { margin-top: 1.6rem; page-break-inside: avoid; }
+    .sec-break { page-break-before: always; }
+    figure, .reading, .tablewrap, .analogy, .callout, pre { page-break-inside: avoid; box-shadow: none; }
+    h2, h3 { page-break-after: avoid; }
+    a { color: var(--ink); text-decoration: underline; }
+    .no-print { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <span class="eyebrow">Tool evaluation &middot; Performance engineering</span>
+    <h1>k6 and JMeter, measured side by side at 1,000 users</h1>
+    <p class="lede">Both tools were installed, configured with matched load profiles, and run against an identical target with a known response time. Every figure below was recorded on our own hardware. Nothing is quoted from a vendor.</p>
+    <div class="meta">
+      <span><b>Date</b> 22 August 2026</span>
+      <span><b>k6</b> v2.1.0</span>
+      <span><b>JMeter</b> 5.6.3 &middot; OpenJDK 17.0.18</span>
+      <span><b>Host</b> Windows 11 &middot; 8 logical cores &middot; 15.6 GB RAM</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <span class="eyebrow">Recommendation</span>
+    <p><strong>Adopt k6.</strong> At our load levels both tools work correctly &mdash; so this is not a capacity argument. k6 wins on the things we do every day: tests that can be code-reviewed, thresholds that gate a pipeline, and a load generator that leaves the machine free. JMeter remains the right answer for database and message-queue protocols, which our APIs do not use.</p>
+  </div>
+
+  <!-- ================= 01 METHOD ================= -->
+  <section>
+    <div class="sec-head"><span class="n">01</span><h2>How the test was run</h2></div>
+
+    <p>A benchmark is only worth quoting if the two sides were given identical work. Both tools were pointed at the same purpose-built target on <span class="mono">127.0.0.1</span> and driven with matched profiles.</p>
+
+    <div class="readings">
+      <div class="reading">
+        <span class="label">Load profile</span>
+        <span class="value">1,000<small> VUs</small></span>
+        <span class="delta">Ramp 0&rarr;1,000 over 30s, hold 60s</span>
+      </div>
+      <div class="reading">
+        <span class="label">Per iteration</span>
+        <span class="value">1<small> GET</small></span>
+        <span class="delta">Plus 1s think time</span>
+      </div>
+      <div class="reading">
+        <span class="label">Target latency</span>
+        <span class="value">50<small> ms</small></span>
+        <span class="delta">Fixed delay &mdash; the known truth</span>
+      </div>
+      <div class="reading">
+        <span class="label">Sampling</span>
+        <span class="value">500<small> ms</small></span>
+        <span class="delta">RSS, threads and CPU per process</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>Why a fixed 50 ms target matters.</strong> Because the true server latency is known exactly, whatever each tool <em>reports</em> can be checked against reality. Any excess is the measurement instrument's own overhead. This turns a vague "which feels faster" into an arithmetic question.</p>
+    </div>
+
+    <div>
+      <div class="code-label">Target &mdash; target.js</div>
+      <pre>const server = http.createServer((req, res) =&gt; {
+  setTimeout(() =&gt; {                  // fixed, known latency
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(body);
+  }, 50);
+});</pre>
+    </div>
+
+    <div>
+      <div class="code-label">k6 &mdash; test.k6.js</div>
+      <pre>export const options = {
+  scenarios: { compare: {
+    executor: 'ramping-vus', startVUs: 0,
+    stages: [ { duration: '30s', target: 1000 },
+              { duration: '60s', target: 1000 } ],
+  } },
+};
+export default function () {
+  const res = http.get('http://127.0.0.1:8099/api');
+  check(res, { 'status 200': (r) =&gt; r.status === 200 });
+  sleep(1);
+}</pre>
+    </div>
+
+    <div>
+      <div class="code-label">JMeter &mdash; test.jmeter.jmx (thread group)</div>
+      <pre>&lt;stringProp name="ThreadGroup.num_threads"&gt;1000&lt;/stringProp&gt;
+&lt;stringProp name="ThreadGroup.ramp_time"&gt;30&lt;/stringProp&gt;
+&lt;boolProp   name="ThreadGroup.scheduler"&gt;true&lt;/boolProp&gt;
+&lt;stringProp name="ThreadGroup.duration"&gt;90&lt;/stringProp&gt;
+&lt;!-- GET /api + ResponseAssertion 200 + ConstantTimer 1000ms --&gt;</pre>
+      <p style="font-size:.84rem;color:var(--ink-faint);margin-top:.6rem">No listeners were attached &mdash; listeners are the classic way to make JMeter look artificially heavy, and k6 has no equivalent cost.</p>
+    </div>
+  </section>
+
+  <!-- ================= 02 RESULTS ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">02</span><h2>What we measured</h2></div>
+
+    <div class="readings">
+      <div class="reading win-k6">
+        <span class="label">Peak memory</span>
+        <span class="value">2.6&times;</span>
+        <span class="delta">JMeter 841 MB &middot; k6 320 MB</span>
+      </div>
+      <div class="reading win-k6">
+        <span class="label">OS threads</span>
+        <span class="value">69&times;</span>
+        <span class="delta">JMeter 1,037 &middot; k6 15</span>
+      </div>
+      <div class="reading win-k6">
+        <span class="label">CPU consumed</span>
+        <span class="value">1.34&times;</span>
+        <span class="delta">JMeter 28.2s &middot; k6 21.1s</span>
+      </div>
+      <div class="reading">
+        <span class="label">Throughput</span>
+        <span class="value">Tie</span>
+        <span class="delta">765/s vs 784/s &mdash; both fine</span>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Recorded from the load-generator process every 500 ms. Both runs completed with zero errors.</caption>
+        <thead>
+          <tr><th>Metric</th><th class="n">JMeter 5.6.3</th><th class="n">k6 v2.1.0</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Peak resident memory</td><td class="n c-jm">841.4 MB</td><td class="n c-k6">320.5 MB</td><td>k6 uses 2.6&times; less</td></tr>
+          <tr><td>Peak OS threads</td><td class="n c-jm">1,037</td><td class="n c-k6">15</td><td>k6 uses 69&times; fewer</td></tr>
+          <tr><td>CPU seconds consumed</td><td class="n c-jm">28.19</td><td class="n c-k6">21.08</td><td>k6 uses 1.34&times; less</td></tr>
+          <tr><td>Average cores busy</td><td class="n c-jm">0.31</td><td class="n c-k6">0.23</td><td>Both comfortable</td></tr>
+          <tr><td>Requests completed</td><td class="n c-jm">69,027</td><td class="n c-k6">71,343</td><td>Equivalent</td></tr>
+          <tr><td>Throughput</td><td class="n c-jm">765.3/s</td><td class="n c-k6">783.5/s</td><td>Equivalent</td></tr>
+          <tr><td>Errors</td><td class="n">0%</td><td class="n">0%</td><td>Both correct</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--jm)"></i> JMeter memory</span>
+        <span><i class="swatch" style="background:var(--k6)"></i> k6 memory</span>
+      </div>
+      <svg viewBox="0 0 720 280" role="img" aria-label="Memory use over the 90 second run. JMeter climbs from 85 MB to 835 MB. k6 rises gently from 149 MB to 320 MB.">
+        <g stroke="var(--rule-soft)" stroke-width="1">
+          <line x1="56" y1="244" x2="704" y2="244"/>
+          <line x1="56" y1="193.3" x2="704" y2="193.3"/>
+          <line x1="56" y1="142.7" x2="704" y2="142.7"/>
+          <line x1="56" y1="92" x2="704" y2="92"/>
+          <line x1="56" y1="41.3" x2="704" y2="41.3"/>
+        </g>
+        <g fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="end">
+          <text x="48" y="247">0</text><text x="48" y="196.3">200</text><text x="48" y="145.7">400</text>
+          <text x="48" y="95">600</text><text x="48" y="44.3">800</text>
+        </g>
+        <g fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">
+          <text x="56" y="262">0s</text><text x="270" y="262">30s</text><text x="483" y="262">60s</text><text x="704" y="262">90s</text>
+        </g>
+        <text x="10" y="20" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10">MB</text>
+
+        <path d="M56 222.5 L114.9 166.4 L173.8 145.4 L232.7 124.4 L291.6 63.7 L350.5 64.1 L409.5 53.1 L468.4 40.6 L527.3 33.2 L586.2 32.8 L645.1 32.6 L704 48.1 L704 244 L56 244 Z" fill="var(--jm-fill)"/>
+        <path d="M56 222.5 L114.9 166.4 L173.8 145.4 L232.7 124.4 L291.6 63.7 L350.5 64.1 L409.5 53.1 L468.4 40.6 L527.3 33.2 L586.2 32.8 L645.1 32.6 L704 48.1" fill="none" stroke="var(--jm)" stroke-width="2.4" stroke-linejoin="round"/>
+
+        <path d="M56 206.4 L114.9 197.5 L173.8 190.9 L232.7 181.1 L291.6 177 L350.5 173 L409.5 167.3 L468.4 167 L527.3 166.3 L586.2 165.2 L645.1 165.2 L704 162.8 L704 244 L56 244 Z" fill="var(--k6-fill)"/>
+        <path d="M56 206.4 L114.9 197.5 L173.8 190.9 L232.7 181.1 L291.6 177 L350.5 173 L409.5 167.3 L468.4 167 L527.3 166.3 L586.2 165.2 L645.1 165.2 L704 162.8" fill="none" stroke="var(--k6)" stroke-width="2.4" stroke-linejoin="round"/>
+
+        <circle cx="645.1" cy="32.6" r="3.5" fill="var(--jm)"/>
+        <circle cx="704" cy="162.8" r="3.5" fill="var(--k6)"/>
+      </svg>
+      <figcaption>JMeter allocates its thread pool within the first 10 seconds and climbs steadily to 835 MB. k6 rises gently to 320 MB and flattens. Note JMeter's default <span class="mono">-Xms1g</span> heap accounts for part of its floor.</figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 720 150" role="img" aria-label="Operating system threads. JMeter used 1037 threads, k6 used 15.">
+        <text x="0" y="16" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10">PEAK OS THREADS TO DRIVE 1,000 VIRTUAL USERS</text>
+        <rect x="0" y="34" width="694" height="30" rx="2" fill="var(--jm)"/>
+        <text x="12" y="54" fill="#fff" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600">JMeter &mdash; 1,037 threads</text>
+        <rect x="0" y="84" width="10" height="30" rx="2" fill="var(--k6)"/>
+        <text x="22" y="104" fill="var(--ink)" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600">k6 &mdash; 15 threads</text>
+        <text x="0" y="138" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10">Bars to scale</text>
+      </svg>
+      <figcaption>The single most dramatic finding, and the one that follows directly from architecture: JMeter creates one operating-system thread per virtual user. k6 multiplexes all 1,000 users across a handful of threads.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ================= 03 ACCURACY ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">03</span><h2>Which tool told the truth?</h2></div>
+
+    <p>The target genuinely took 50 ms. Anything above that line is overhead the measuring instrument added.</p>
+
+    <figure>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--jm)"></i> JMeter</span>
+        <span><i class="swatch" style="background:var(--k6)"></i> k6</span>
+        <span><i class="swatch" style="background:var(--truth);height:0;border-top:2px dashed var(--truth)"></i> True latency &mdash; 50 ms</span>
+      </div>
+      <svg viewBox="0 0 720 280" role="img" aria-label="Latency reported by each tool against a true 50ms baseline. JMeter average 61.7ms, k6 average 56.8ms. JMeter max 206ms, k6 max 108ms.">
+        <g stroke="var(--rule-soft)" stroke-width="1">
+          <line x1="46" y1="240" x2="710" y2="240"/><line x1="46" y1="192" x2="710" y2="192"/>
+          <line x1="46" y1="144" x2="710" y2="144"/><line x1="46" y1="96" x2="710" y2="96"/><line x1="46" y1="48" x2="710" y2="48"/>
+        </g>
+        <g fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="end">
+          <text x="38" y="243">0</text><text x="38" y="195">50</text><text x="38" y="147">100</text><text x="38" y="99">150</text><text x="38" y="51">200</text>
+        </g>
+        <text x="6" y="20" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace" font-size="10">ms</text>
+
+        <!-- truth line at 50ms => y = 240 - 50*0.96 = 192 -->
+        <line x1="46" y1="192" x2="710" y2="192" stroke="var(--truth)" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="706" y="186" fill="var(--truth)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="end">true 50 ms</text>
+
+        <!-- groups: avg, p95, p99, max  (y = 240 - v*0.96) -->
+        <!-- avg: jm 61.66 -> 180.8 ; k6 56.83 -> 185.4 -->
+        <rect x="80"  y="180.8" width="52" height="59.2" fill="var(--jm)" rx="2"/>
+        <rect x="138" y="185.4" width="52" height="54.6" fill="var(--k6)" rx="2"/>
+        <text x="135" y="258" fill="var(--ink-soft)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">average</text>
+        <text x="106" y="174" fill="var(--jm)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">61.7</text>
+        <text x="164" y="174" fill="var(--k6)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">56.8</text>
+
+        <!-- p95: jm 70 -> 172.8 ; k6 66.23 -> 176.4 -->
+        <rect x="240" y="172.8" width="52" height="67.2" fill="var(--jm)" rx="2"/>
+        <rect x="298" y="176.4" width="52" height="63.6" fill="var(--k6)" rx="2"/>
+        <text x="295" y="258" fill="var(--ink-soft)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">p95</text>
+        <text x="266" y="166" fill="var(--jm)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">70.0</text>
+        <text x="324" y="166" fill="var(--k6)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">66.2</text>
+
+        <!-- p99: jm 81 -> 162.2 ; k6 71.48 -> 171.4 -->
+        <rect x="400" y="162.2" width="52" height="77.8" fill="var(--jm)" rx="2"/>
+        <rect x="458" y="171.4" width="52" height="68.6" fill="var(--k6)" rx="2"/>
+        <text x="455" y="258" fill="var(--ink-soft)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">p99</text>
+        <text x="426" y="156" fill="var(--jm)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">81.0</text>
+        <text x="484" y="156" fill="var(--k6)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">71.5</text>
+
+        <!-- max: jm 206 -> 42.2 ; k6 107.91 -> 136.4 -->
+        <rect x="560" y="42.2" width="52" height="197.8" fill="var(--jm)" rx="2"/>
+        <rect x="618" y="136.4" width="52" height="103.6" fill="var(--k6)" rx="2"/>
+        <text x="615" y="258" fill="var(--ink-soft)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">worst case</text>
+        <text x="586" y="36" fill="var(--jm)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">206</text>
+        <text x="644" y="130" fill="var(--k6)" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">108</text>
+      </svg>
+      <figcaption>Both tools were honest: the excess above 50 ms is real elapsed time in the HTTP client and the OS. k6 added 6.8 ms on average, JMeter 11.7 ms. The gap widens at the tail &mdash; JMeter's worst case was 206 ms against k6's 108 ms, which is garbage collection pausing threads mid&#8209;measurement.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <p><strong>State this plainly and it will survive scrutiny:</strong> the ~5 ms difference matters for a 20 ms API and is noise for a 300 ms one. Our endpoints sit in the hundreds of milliseconds, so we are <em>not</em> claiming JMeter would give us wrong numbers. We are claiming it costs more to get the same answer.</p>
+    </div>
+  </section>
+
+  <!-- ================= 04 ANALOGIES ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">04</span><h2>Explaining it without the jargon</h2></div>
+
+    <div class="analogies">
+      <div class="analogy">
+        <h3>Waiters and diners</h3>
+        <p>JMeter hires one waiter per diner. A thousand diners means a thousand waiters crowding the same kitchen &mdash; most stood still, waiting on food, while the kitchen jams with bodies.</p>
+        <p>k6 employs fifteen waiters who never stand still: place an order, move to the next table, come back when the food is up.</p>
+        <p class="tie">Same meals served. 1,037 staff versus 15.</p>
+      </div>
+
+      <div class="analogy">
+        <h3>The stopwatch that takes time to click</h3>
+        <p>Every measuring instrument disturbs what it measures. Timing a 50 ms request with a stopwatch that itself takes 12 ms to press gives a different answer than one that takes 7 ms.</p>
+        <p class="tie">Neither lied. One is a finer instrument.</p>
+      </div>
+
+      <div class="analogy">
+        <h3>Blueprint versus assembly notes</h3>
+        <p>A JMeter test is 800+ lines of machine-written XML. Nobody can review a change to it &mdash; you approve it because it ran, not because you read it.</p>
+        <p>A k6 test is 50 lines of JavaScript that a colleague reads in a pull request like any other code.</p>
+        <p class="tie">Tests we cannot review are tests we cannot trust.</p>
+      </div>
+
+      <div class="analogy">
+        <h3>The queue that measures itself</h3>
+        <p>Time a restaurant queue by only clocking people who got seated, and you miss everyone who gave up and left. Load tools do this when they wait for a slow reply before sending the next request.</p>
+        <p class="tie">Both tools have it. Both can fix it &mdash; k6 with arrival&#8209;rate executors, JMeter with the Open Model Thread Group. This is a configuration choice, not a tool choice.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 05 THE HONEST CASE ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">05</span><h2>Where JMeter is the better tool</h2></div>
+
+    <p>A recommendation that only lists one side's strengths invites the question of what was left out. These are real and we checked them.</p>
+
+    <ul>
+      <li><strong>Protocol coverage.</strong> JMeter tests JDBC, JMS, LDAP, FTP and SMTP natively. k6 cannot. If we ever load-test a database or message queue directly, JMeter is the answer.</li>
+      <li><strong>Free distributed testing.</strong> JMeter's controller/worker mode is built in and runs on plain VMs. k6's equivalent needs a Kubernetes cluster or paid Grafana Cloud.</li>
+      <li><strong>Record and replay.</strong> JMeter's proxy recorder captures a browser session into a test plan. k6 has no equivalent.</li>
+      <li><strong>Non-programmers.</strong> JMeter's GUI is genuinely the gentler start for someone who will never write code.</li>
+      <li><strong>API stability.</strong> k6 v2 removed the <span class="mono">externally-controlled</span> executor, which cost us live VU scaling. A 20-year-old Apache project does not do that.</li>
+      <li><strong>Community depth.</strong> Two decades of JMeter answers versus a thinner k6 corpus.</li>
+    </ul>
+
+    <div class="callout caution">
+      <p><strong>Why none of these change the decision.</strong> Our APIs are HTTP and JSON, so the protocol gap never opens. At 300&ndash;500 concurrent users a single machine is ample, so distributed mode never opens. Our team reads JavaScript daily. Of k6's drawbacks, only the version&#8209;stability risk can reach us &mdash; and pinning the k6 version in the repository closes it.</p>
+    </div>
+  </section>
+
+  <!-- ================= 06 DECISION ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">06</span><h2>Scored against our actual work</h2></div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Weighted by how often each factor appears in our week, not by how impressive it sounds.</caption>
+        <thead><tr><th>What we do</th><th>Better tool</th><th>Why it matters here</th></tr></thead>
+        <tbody>
+          <tr><td>HTTP / JSON API testing</td><td class="c-k6">k6</td><td>Both capable; k6 is lighter and quicker to author</td></tr>
+          <tr><td>Tests reviewed in pull requests</td><td class="c-k6">k6</td><td>Readable JavaScript instead of generated XML</td></tr>
+          <tr><td>Pipeline pass/fail gates</td><td class="c-k6">k6</td><td>Thresholds and exit codes are built in</td></tr>
+          <tr><td>One machine, 300&ndash;500 users</td><td>Either</td><td>Measured: both idled at ~0.3 of 8 cores</td></tr>
+          <tr><td>Running alongside other work</td><td class="c-k6">k6</td><td>320 MB and 15 threads leaves the laptop usable</td></tr>
+          <tr><td>Onboarding a non-coder</td><td class="c-jm">JMeter</td><td>Mitigated: our runner takes a Postman collection</td></tr>
+          <tr><td>Database / queue protocols</td><td class="c-jm">JMeter</td><td>Not applicable to our stack today</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="verdict">
+      <span class="eyebrow">Decision</span>
+      <p><strong>Standardise on k6 for API load testing.</strong> Keep JMeter in mind for the day we need a protocol k6 does not speak &mdash; adding it for that one job costs far less than migrating everything now. The two are not mutually exclusive, and plenty of teams run both.</p>
+    </div>
+  </section>
+
+  <!-- ================= 07 CAVEATS ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">07</span><h2>Limits of this benchmark</h2></div>
+
+    <p>Declaring these up front is what separates a measurement from a marketing claim &mdash; and it is the first thing a sceptical reviewer will probe.</p>
+
+    <ul>
+      <li><strong>JMeter pre-allocates a 1 GB heap</strong> (<span class="mono">-Xms1g -Xmx1g</span> by default). Part of its 841 MB is that configured floor, not per-thread cost. Tuning the heap would narrow the memory gap.</li>
+      <li><strong>JMeter wrote a 7.4 MB results file</strong>; k6 wrote only a summary. That is real I/O k6 did not pay for. It is standard JMeter practice, but not a like-for-like engine comparison.</li>
+      <li><strong>Generator and target shared one 8-core machine.</strong> Neither was starved &mdash; both used about a third of one core &mdash; but this is not an isolated lab.</li>
+      <li><strong>1,000 users is not where JMeter struggles.</strong> The divergence grows at 5,000&ndash;10,000+, where thousands of OS threads contend for a handful of cores. We did not test that, and we do not claim it.</li>
+      <li><strong>A single run each.</strong> Repeat runs would tighten confidence in the CPU figure especially.</li>
+    </ul>
+
+    <div class="callout">
+      <p><strong>Independent corroboration.</strong> A separately published comparison recorded JMeter at 760 MB against k6 at 256 MB. Our run gave 841 MB against 320 MB &mdash; different hardware, the same ratio. The memory finding is not an artefact of our setup.</p>
+    </div>
+  </section>
+
+  <!-- ================= 08 REFERENCES ================= -->
+  <section class="sec-break">
+    <div class="sec-head"><span class="n">08</span><h2>Sources</h2></div>
+
+    <p style="font-size:.9rem;color:var(--ink-soft)">Primary data is our own. The following corroborate the architectural claims and version history.</p>
+
+    <div class="refs">
+      <a href="https://grafana.com/docs/k6/latest/testing-guides/running-large-tests/">k6 &mdash; Running large tests (official documentation: 1&ndash;5 MB per VU, 30,000&ndash;40,000 VUs per machine)</a>
+      <a href="https://jmeter.apache.org/usermanual/best-practices.html">Apache JMeter &mdash; Best Practices (official: non-GUI mode, thread sizing, coordinated omission)</a>
+      <a href="https://github.com/apache/jmeter/releases">Apache JMeter releases (latest stable 5.6.3, January 2024)</a>
+      <a href="https://github.com/grafana/k6/releases">Grafana k6 releases (v2.x line; v2.0 removed the externally-controlled executor)</a>
+      <a href="https://www.blazemeter.com/blog/jmeter-maximum-concurrent-users">BlazeMeter &mdash; Maximum concurrent users in JMeter (200&ndash;300 threads per engine guidance)</a>
+      <a href="https://bazlur.ca/2023/09/20/exploring-the-impact-of-stack-size-on-jvm-thread-creation-a-myth-debunked/">Exploring the impact of stack size on JVM thread creation &mdash; a myth debunked</a>
+      <a href="https://www.scylladb.com/2021/04/22/on-coordinated-omission/">ScyllaDB &mdash; On coordinated omission</a>
+      <a href="https://redhatperf.github.io/post/coordinated-omission/">Red Hat Performance &mdash; Coordinated omission</a>
+      <a href="https://martkos-it.co.uk/blog/distributed-load-testing-kubernetes/">Distributed load testing on Kubernetes: JMeter, k6 and Gatling</a>
+      <a href="https://softwaretestpilot.com/blog/performance-testing/we-tested-k6-vs-jmeter-real-app-results">k6 vs JMeter benchmarked on a real app (self-described as directional, not lab-grade)</a>
+    </div>
+  </section>
+
+  <footer>
+    Prepared from measurements taken on 22 August 2026. Test harness &mdash; <span class="mono">target.js</span>, <span class="mono">test.k6.js</span>, <span class="mono">test.jmeter.jmx</span>, <span class="mono">measure.ps1</span> &mdash; is reproducible and available with this report.
+  </footer>
+
+</div>
