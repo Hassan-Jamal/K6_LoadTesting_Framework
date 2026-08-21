@@ -1,0 +1,7 @@
+summary +   8333 in 00:00:24 =  341.7/s Avg:    62 Min:    50 Max:   120 Err:     0 (0.00%) Active: 789 Started: 789 Finished: 0
+summary +  27279 in 00:00:30 =  908.3/s Avg:    61 Min:    50 Max:   206 Err:     0 (0.00%) Active: 1000 Started: 1000 Finished: 0
+summary =  35612 in 00:00:54 =  654.4/s Avg:    61 Min:    50 Max:   206 Err:     0 (0.00%)
+summary +  28038 in 00:00:30 =  934.6/s Avg:    61 Min:    50 Max:    79 Err:     0 (0.00%) Active: 1000 Started: 1000 Finished: 0
+summary =  63650 in 00:01:24 =  754.0/s Avg:    61 Min:    50 Max:   206 Err:     0 (0.00%)
+summary +   5377 in 00:00:06 =  931.1/s Avg:    62 Min:    50 Max:    93 Err:     0 (0.00%) Active: 0 Started: 1000 Finished: 1000
+summary =  69027 in 00:01:30 =  765.3/s Avg:    61 Min:    50 Max:   206 Err:     0 (0.00%)
