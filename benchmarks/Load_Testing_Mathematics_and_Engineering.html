@@ -1,0 +1,2068 @@
+<title>Load Testing Mathematics and Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --paper:      #FFFFFF;
+    --panel:      #F5F7FA;
+    --panel-2:    #EBEFF5;
+    --ink:        #131A24;
+    --ink-soft:   #44515F;
+    --ink-faint:  #6E7C8C;
+    --rule:       #CBD5E1;
+    --rule-soft:  #E2E8F0;
+
+    --accent:     #0B5FA5;   /* engineering blue */
+    --accent-bg:  #E7F0F9;
+    --formula:    #A45A09;   /* amber, for mathematics */
+    --formula-bg: #FCF3E6;
+    --ok:         #15803D;
+    --bad:        #B91C1C;
+    --warn:       #B45309;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0F141B; --panel: #161D26; --panel-2: #1D2632;
+      --ink: #E6EDF5; --ink-soft: #A9B6C4; --ink-faint: #7A8797;
+      --rule: #2C3846; --rule-soft: #232D39;
+      --accent: #5EA8E5; --accent-bg: #14283A;
+      --formula: #E0A458; --formula-bg: #2A2115;
+      --ok: #4ADE80; --bad: #F87171; --warn: #FBBF24;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F141B; --panel: #161D26; --panel-2: #1D2632;
+    --ink: #E6EDF5; --ink-soft: #A9B6C4; --ink-faint: #7A8797;
+    --rule: #2C3846; --rule-soft: #232D39;
+    --accent: #5EA8E5; --accent-bg: #14283A;
+    --formula: #E0A458; --formula-bg: #2A2115;
+    --ok: #4ADE80; --bad: #F87171; --warn: #FBBF24;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Sans 3", system-ui, sans-serif;
+    font-size: 10.6pt; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .doc { max-width: 62rem; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+  h1, h2, h3, h4 { font-family: Archivo, system-ui, sans-serif; margin: 0; text-wrap: balance; }
+  h1 { font-size: 27pt; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+  h2 { font-size: 16pt; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+  h3 { font-size: 12pt; font-weight: 600; }
+  h4 { font-size: 10.4pt; font-weight: 600; }
+
+  p { margin: 0 0 0.7rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 600; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+
+  /* ---------- cover ---------- */
+  .cover { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  .cover .kicker {
+    font-family: "JetBrains Mono", monospace; font-size: 8.5pt; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .cover .sub { font-size: 13pt; color: var(--ink-soft); max-width: 40rem; }
+  .cover .rule { height: 3px; background: var(--ink); width: 100%; }
+  .cover dl {
+    display: grid; grid-template-columns: 11rem 1fr; gap: .35rem 1.5rem;
+    margin: 0; font-size: 9.5pt; max-width: 38rem;
+  }
+  .cover dt { font-family: "JetBrains Mono", monospace; color: var(--ink-faint); font-size: 8.5pt; text-transform: uppercase; letter-spacing: .08em; }
+  .cover dd { margin: 0; color: var(--ink-soft); }
+
+  /* ---------- contents ---------- */
+  .toc { column-count: 2; column-gap: 2.5rem; font-size: 9.6pt; }
+  .toc ol { margin: 0; padding-left: 1.6rem; }
+  .toc li { margin-bottom: .18rem; break-inside: avoid; color: var(--ink-soft); }
+  .toc li::marker { font-family: "JetBrains Mono", monospace; color: var(--ink-faint); font-size: 8.5pt; }
+  .toc .part {
+    break-inside: avoid; margin: .9rem 0 .35rem; font-family: Archivo, sans-serif;
+    font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: .1em; color: var(--accent);
+  }
+  .toc .part:first-child { margin-top: 0; }
+
+  /* ---------- structure ---------- */
+  section { margin-top: 2rem; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: .8rem;
+    border-bottom: 2px solid var(--ink); padding-bottom: .4rem; margin-bottom: .9rem;
+  }
+  .sec-head .num {
+    font-family: "JetBrains Mono", monospace; font-size: 10pt; font-weight: 700;
+    color: var(--accent); min-width: 2.2rem;
+  }
+  h3.sub-head { margin: 1.2rem 0 .5rem; color: var(--ink); border-left: 3px solid var(--accent); padding-left: .6rem; }
+
+  .part-divider {
+    margin-top: 2.6rem; padding: 1.2rem 1.4rem; background: var(--ink); color: var(--paper);
+    border-radius: 3px; display: flex; align-items: baseline; gap: 1rem;
+  }
+  .part-divider .n { font-family: "JetBrains Mono", monospace; font-size: 9pt; opacity: .6; letter-spacing: .1em; }
+  .part-divider h2 { color: var(--paper); font-size: 14pt; }
+
+  /* ---------- boxes ---------- */
+  .calc, .formula-box, .keybox, .caveat, .story-block {
+    border-radius: 3px; margin: .8rem 0; break-inside: avoid;
+  }
+  .calc {
+    background: var(--panel); border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent); padding: .85rem 1.1rem;
+  }
+  .calc .title {
+    font-family: "JetBrains Mono", monospace; font-size: 8pt; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: .5rem; font-weight: 700;
+  }
+  .calc pre { margin: 0; }
+
+  pre {
+    font-family: "JetBrains Mono", monospace; font-size: 9pt; line-height: 1.65;
+    margin: 0; white-space: pre-wrap; color: var(--ink);
+  }
+  code { font-family: "JetBrains Mono", monospace; font-size: 9.2pt; background: var(--panel-2); padding: .05rem .3rem; border-radius: 2px; }
+
+  .formula-box {
+    background: var(--formula-bg); border: 1px solid var(--formula);
+    padding: .9rem 1.2rem; text-align: center;
+  }
+  .formula-box .eq {
+    font-family: "JetBrains Mono", monospace; font-size: 12pt; font-weight: 500;
+    color: var(--formula); letter-spacing: .01em;
+  }
+  .formula-box .legend { font-size: 8.8pt; color: var(--ink-soft); margin-top: .5rem; text-align: left; }
+  .formula-box .tag {
+    display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 7.5pt;
+    letter-spacing: .1em; text-transform: uppercase; padding: .1rem .45rem; border-radius: 2px;
+    margin-bottom: .5rem; font-weight: 700;
+  }
+  .tag.exact { background: var(--ok); color: #fff; }
+  .tag.approx { background: var(--warn); color: #fff; }
+  .tag.assume { background: var(--ink-faint); color: #fff; }
+
+  .keybox { background: var(--accent-bg); border: 1px solid var(--accent); padding: .85rem 1.1rem; }
+  .keybox .label {
+    font-family: "JetBrains Mono", monospace; font-size: 8pt; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: .35rem;
+  }
+  .caveat { background: var(--panel); border-left: 3px solid var(--warn); padding: .8rem 1.1rem; }
+  .caveat .label {
+    font-family: "JetBrains Mono", monospace; font-size: 8pt; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--warn); font-weight: 700; margin-bottom: .35rem;
+  }
+
+  /* story chain */
+  .chain { display: grid; gap: .5rem; margin: .9rem 0; break-inside: avoid; }
+  .chain .step {
+    display: grid; grid-template-columns: 6.5rem 1fr; gap: .9rem;
+    border-bottom: 1px solid var(--rule-soft); padding-bottom: .45rem;
+  }
+  .chain .step:last-child { border-bottom: 0; }
+  .chain .who {
+    font-family: "JetBrains Mono", monospace; font-size: 8pt; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--accent); font-weight: 700; padding-top: .12rem;
+  }
+  .chain .what { font-size: 9.8pt; color: var(--ink-soft); }
+  .chain .what strong { color: var(--ink); }
+
+  /* ---------- tables ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: 9.2pt; margin: .8rem 0; break-inside: avoid; }
+  th, td { text-align: left; padding: .38rem .6rem; border-bottom: 1px solid var(--rule-soft); }
+  thead th {
+    font-family: "JetBrains Mono", monospace; font-size: 7.6pt; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 700;
+    background: var(--panel-2); border-bottom: 1.5px solid var(--rule);
+  }
+  td.n, th.n { text-align: right; font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: 0; }
+  table caption { caption-side: bottom; text-align: left; font-size: 8.4pt; color: var(--ink-faint); padding-top: .4rem; }
+  .tw { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; }
+  .tw table { margin: 0; }
+  .good { color: var(--ok); font-weight: 600; }
+  .bad  { color: var(--bad); font-weight: 600; }
+  .warncell { color: var(--warn); font-weight: 600; }
+
+  ul, ol.body { margin: .5rem 0 .7rem; padding-left: 1.3rem; }
+  li { margin-bottom: .22rem; }
+
+  figure { margin: .9rem 0; break-inside: avoid; }
+  figure svg { display: block; width: 100%; height: auto; }
+  figcaption { font-size: 8.4pt; color: var(--ink-faint); margin-top: .4rem; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 800px) { .two-col, .toc { grid-template-columns: 1fr; column-count: 1; } }
+
+  /* ---------- print ---------- */
+  @media print {
+    :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+      --paper: #FFFFFF; --panel: #F4F7FA; --panel-2: #E9EEF4;
+      --ink: #0F151D; --ink-soft: #3D4A58; --ink-faint: #66727F;
+      --rule: #C2CCD8; --rule-soft: #DFE5EC;
+      --accent: #0A5391; --accent-bg: #E8F1F9;
+      --formula: #8F4E07; --formula-bg: #FCF4E8;
+      --ok: #146B33; --bad: #A11818; --warn: #97460A;
+    }
+    @page { size: A4; margin: 18mm 15mm 16mm; }
+    body { font-size: 9.7pt; }
+    .doc { max-width: none; padding: 0; }
+    .cover { min-height: 0; padding-top: 3rem; page-break-after: always; }
+    .part-divider { page-break-before: always; }
+    section { page-break-inside: auto; margin-top: 1.5rem; }
+    .sec-head { page-break-after: avoid; }
+    h2, h3, h4 { page-break-after: avoid; }
+    .calc, .formula-box, .keybox, .caveat, figure, .chain, .tw { page-break-inside: avoid; }
+    tr { page-break-inside: avoid; }
+    a { color: var(--ink); text-decoration: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="doc">
+
+<!-- ═══════════════ COVER ═══════════════ -->
+<div class="cover">
+  <div class="kicker">Performance Engineering &middot; Reference Document</div>
+  <h1>Load Testing Mathematics<br>&amp; Engineering</h1>
+  <div class="rule"></div>
+  <p class="sub">From virtual users to server capacity &mdash; what actually happens between the moment you configure a load test and the moment the final graph appears on your screen.</p>
+  <dl>
+    <dt>Central question</dt><dd>&ldquo;I want to test 500 users at 20 requests/second&rdquo; &mdash; what really happens?</dd>
+    <dt>Worked example</dt><dd>Pocket Coach &mdash; 5,000 registered users, 500 concurrent, PostgreSQL + Redis</dd>
+    <dt>Scope</dt><dd>Tester configuration &rarr; tool &rarr; operating system &rarr; network &rarr; server &rarr; database &rarr; metrics</dd>
+    <dt>Mathematics</dt><dd>Every figure computed and cross-checked for internal consistency</dd>
+    <dt>Audience</dt><dd>SQA engineers, performance engineers, and the people who read their reports</dd>
+  </dl>
+</div>
+
+<!-- ═══════════════ CONTENTS ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">&mdash;</span><h2>Contents</h2></div>
+  <div class="toc">
+    <div class="part">Part I &middot; The chain</div>
+    <ol>
+      <li>The story: what your manager asked for</li>
+      <li>The full chain, stage by stage</li>
+      <li>Requests, responses, transactions, iterations</li>
+      <li>Virtual users and the four kinds of &ldquo;user&rdquo;</li>
+      <li>Concurrency and Little's Law</li>
+    </ol>
+    <div class="part">Part II &middot; The core numbers</div>
+    <ol start="6">
+      <li>Throughput: RPS, TPS and conversions</li>
+      <li>Iterations and total request count</li>
+      <li>Duration and arrival rate</li>
+      <li>Response time and its components</li>
+      <li>Latency vs response time</li>
+      <li>Percentiles and why the average lies</li>
+      <li>Error rate and HTTP status meanings</li>
+      <li>Ramp-up arithmetic</li>
+      <li>Spike testing</li>
+      <li>Think time</li>
+    </ol>
+    <div class="part">Part III &middot; The machinery</div>
+    <ol start="16">
+      <li>Connections and protocol behaviour</li>
+      <li>Inside the load generator machine</li>
+      <li>Load generator overhead</li>
+      <li>Distributed load generation</li>
+      <li>CPU calculations and the Utilization Law</li>
+      <li>Memory calculations</li>
+      <li>Database calculations</li>
+      <li>Cache hit ratio</li>
+      <li>Queueing: why latency explodes</li>
+    </ol>
+    <div class="part">Part IV &middot; Applying it</div>
+    <ol start="25">
+      <li>Capacity, saturation and breaking point</li>
+      <li>The five test types compared</li>
+      <li>How tools turn configuration into traffic</li>
+      <li>Identical scenario in k6 and JMeter</li>
+      <li>Measuring your generator's overhead</li>
+      <li>Network bandwidth</li>
+      <li>Timeouts</li>
+      <li>Retries and traffic amplification</li>
+      <li>Open vs closed workload models</li>
+      <li>Thresholds and error budgets</li>
+      <li>Reading a real result</li>
+    </ol>
+    <div class="part">Part V &middot; Reference</div>
+    <ol start="36">
+      <li>Complete end-to-end worked example</li>
+      <li>Mathematical accuracy rules</li>
+      <li>Formula cheat sheet</li>
+      <li>Terminology glossary</li>
+    </ol>
+  </div>
+</section>
+
+<div class="part-divider"><span class="n">PART I</span><h2>The chain</h2></div>
+
+<!-- ═══════════════ 1 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">1</span><h2>The story: what your manager asked for</h2></div>
+
+  <p>You are the load tester on <strong>Pocket Coach</strong>, a coaching application. Your manager says:</p>
+
+  <div class="keybox">
+    <div class="label">The brief</div>
+    <p>&ldquo;We expect 5,000 registered users, with about 500 of them online at peak. Find out whether our system can handle them.&rdquo;</p>
+  </div>
+
+  <p>This sentence contains no testable instruction. &ldquo;500 users&rdquo; is not a load &mdash; it is a population. Before anything can be measured, it has to be converted into quantities a machine can generate. That conversion is the first real skill in performance testing, and most bad load tests fail here rather than in the tool.</p>
+
+  <h3 class="sub-head">The system under test</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Component</th><th>Specification</th><th>Why it matters to us</th></tr></thead>
+    <tbody>
+      <tr><td>Load balancer</td><td>Single entry point</td><td>Connection limits, queueing, timeouts</td></tr>
+      <tr><td>Application server</td><td>16 CPU cores, 32 GB RAM</td><td>CPU is usually the first ceiling</td></tr>
+      <tr><td>PostgreSQL</td><td>Connection pool, disk I/O</td><td>Pool exhaustion appears as latency, not errors</td></tr>
+      <tr><td>Redis cache</td><td>In front of read queries</td><td>Hit ratio decides how much load reaches the database</td></tr>
+      <tr><td>Load generator</td><td>Your laptop or a CI runner</td><td>Can silently become the bottleneck</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="sub-head">What the tester actually decides</h3>
+  <p>A tester does not &ldquo;create 500 requests&rdquo;. They choose a set of parameters, and the tool derives the traffic from them:</p>
+  <div class="calc">
+    <div class="title">Test configuration &mdash; the tester's inputs</div>
+<pre>Virtual users (VUs)     how many simulated people exist at once
+Arrival rate / RPS      how many requests should start per second
+Duration                how long the test runs
+Ramp-up                 how quickly load is introduced
+Iterations              how many times each user repeats the journey
+Scenario                which requests, in what order
+Think time              how long a user pauses between actions
+Thresholds              what counts as pass or fail</pre>
+  </div>
+  <p>Every number in the rest of this document flows from those eight inputs.</p>
+</section>
+
+<!-- ═══════════════ 2 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">2</span><h2>The full chain, stage by stage</h2></div>
+
+  <p>Here is what happens between pressing <em>Start</em> and reading a graph. Each stage transforms the load, and each one can distort the result.</p>
+
+  <div class="chain">
+    <div class="step"><div class="who">Tester</div><div class="what">Chooses VUs, rate, duration, ramp, think time and thresholds. <strong>Decides what &ldquo;500 users&rdquo; means numerically.</strong></div></div>
+    <div class="step"><div class="who">Tool</div><div class="what">Converts configuration into a schedule: when each virtual user starts, what it executes, when it repeats. Allocates workers and metric buffers.</div></div>
+    <div class="step"><div class="who">Workers</div><div class="what">Each VU runs the scenario &mdash; build request, serialise body, apply auth, wait for response, record timing, sleep for think time, repeat.</div></div>
+    <div class="step"><div class="who">OS</div><div class="what">Allocates sockets and file descriptors, schedules threads onto cores, manages TCP state, performs TLS encryption. <strong>Finite resources here cap your achievable load.</strong></div></div>
+    <div class="step"><div class="who">Network</div><div class="what">Bytes travel. Adds propagation delay, bandwidth limits, packet loss, and possible queueing at every hop.</div></div>
+    <div class="step"><div class="who">Balancer</div><div class="what">Terminates or forwards connections, spreads requests across backends, applies its own connection limits and timeouts.</div></div>
+    <div class="step"><div class="who">App server</div><div class="what">Accepts the connection, may <strong>queue</strong> the request until a worker is free, parses, authenticates, executes business logic.</div></div>
+    <div class="step"><div class="who">Data tier</div><div class="what">Cache lookup; on a miss, a database connection is borrowed from the pool, queries run, locks may be taken, results return.</div></div>
+    <div class="step"><div class="who">Response</div><div class="what">Serialised and sent back down the same path, arriving as bytes at the generator.</div></div>
+    <div class="step"><div class="who">Tool</div><div class="what">Stops the clock, checks status and assertions, tags the sample, and adds it to in-memory aggregates.</div></div>
+    <div class="step"><div class="who">Metrics</div><div class="what">Counts, rates, averages and percentiles are computed &mdash; often from sampled data, not every observation.</div></div>
+    <div class="step"><div class="who">Analysis</div><div class="what">You decide whether the system passed. <strong>This is the only stage that produces a decision, and it inherits every distortion above it.</strong></div></div>
+  </div>
+
+  <div class="caveat">
+    <div class="label">The measurement principle</div>
+    <p>The tool measures <strong>elapsed time at the client</strong> &mdash; from just before the request is written to just after the response is read. That figure necessarily includes network travel, server queueing, and a share of the generator's own scheduling. It is <em>not</em> your server's processing time, and treating it as such is the most common analytical error in load testing.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 3 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">3</span><h2>Requests, responses, transactions, iterations</h2></div>
+
+  <p>These four words are used loosely in conversation and precisely in tooling. Mixing them up produces reports that disagree with themselves.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Term</th><th>Definition</th><th>Everyday analogy</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Request</strong></td><td>One HTTP message sent to the server</td><td>One question asked</td></tr>
+      <tr><td><strong>Response</strong></td><td>One HTTP message returned, carrying a status code</td><td>One answer received</td></tr>
+      <tr><td><strong>Transaction</strong></td><td>A business action, which may span several requests</td><td>&ldquo;Place an order&rdquo;</td></tr>
+      <tr><td><strong>Iteration</strong></td><td>One full pass of a virtual user through the scenario</td><td>One lap of the shop</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="sub-head">The counting arithmetic</h3>
+  <p>Our Pocket Coach journey has four steps:</p>
+  <div class="calc">
+    <div class="title">One iteration</div>
+<pre>Login  →  Get Profile  →  Get Feed  →  Get Posts
+
+1 iteration = 4 requests</pre>
+  </div>
+
+  <div class="calc">
+    <div class="title">Scaling it up</div>
+<pre>Users                  = 100
+Iterations per user    = 10
+
+Total iterations       = 100 × 10
+                       = 1,000
+
+Total requests         = 1,000 × 4
+                       = 4,000 requests</pre>
+  </div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Requests = Users × Iterations per user × Requests per iteration</div>
+    <div class="legend">Exact when every iteration completes and no request is retried or redirected. Both of those assumptions break in practice &mdash; see &sect;32 for retries and the note below for redirects.</div>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Redirects inflate the count</div>
+    <p>If a request returns <code>302</code> and the tool follows it, that single logical step costs <strong>two</strong> HTTP requests. A four-step journey where three steps redirect actually issues seven requests, not four. Reports that show &ldquo;requests&rdquo; far above <em>iterations &times; steps</em> are usually explained by redirects, not by a bug.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 4 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">4</span><h2>Virtual users and the four kinds of &ldquo;user&rdquo;</h2></div>
+
+  <p>The word &ldquo;user&rdquo; carries four different meanings in a capacity conversation. Confusing them is how a test ends up 50&times; too aggressive or 50&times; too gentle.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Term</th><th>Meaning</th><th>Pocket Coach</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Registered users</strong></td><td>Rows in your users table</td><td class="n">5,000</td></tr>
+      <tr><td><strong>Active users</strong></td><td>Used the app in a period (daily actives)</td><td class="n">~1,500/day</td></tr>
+      <tr><td><strong>Concurrent users</strong></td><td>Have a live session at the same instant</td><td class="n">500</td></tr>
+      <tr><td><strong>Virtual users (VUs)</strong></td><td>Simulated workers in the load tool</td><td class="n">a chosen number</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">The inequality that matters</div>
+    <pre>5,000 registered  ≠  500 concurrent  ≠  50 requests/second  ≠  500 VUs</pre>
+    <p style="margin-top:.5rem">These are four different quantities with four different units. Only the last two can be typed into a load-testing tool, and only the third describes actual pressure on the server.</p>
+  </div>
+
+  <h3 class="sub-head">What a virtual user actually is</h3>
+  <p>A VU is <strong>a worker that performs one action at a time and then repeats</strong>. It is not a request, and it is not a person. Crucially, a VU spends most of its life <em>waiting</em> &mdash; for a response, or for its think time to elapse.</p>
+
+  <div class="calc">
+    <div class="title">A user's duty cycle &mdash; Pocket Coach</div>
+<pre>Requests per user per minute  = 6
+Time between requests         = 60 / 6      = 10 s
+Response time                 = 0.2 s
+
+Fraction of time actually in the system:
+                              = 0.2 / 10    = 2%</pre>
+  </div>
+
+  <p>Each user is &ldquo;in&rdquo; the system only <strong>2% of the time</strong>. That single number is why 500 concurrent users do not mean 500 simultaneous requests &mdash; a point &sect;5 makes exact.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Tool concept</th><th>What it maps to</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td>Thread</td><td>An OS thread, one per VU in thread-based tools</td><td>Memory and scheduling cost per VU</td></tr>
+      <tr><td>Worker / goroutine</td><td>Lightweight task multiplexed onto few threads</td><td>Many more VUs per machine</td></tr>
+      <tr><td>Process</td><td>Separate OS process, often one per CPU core</td><td>Isolation, but higher memory</td></tr>
+    </tbody>
+    <caption>Different tools choose different models. &sect;17 and &sect;28 cover why this changes what one machine can generate.</caption>
+  </table></div>
+</section>
+
+<!-- ═══════════════ 5 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">5</span><h2>Concurrency and Little's Law</h2></div>
+
+  <p>This is the single most useful equation in performance engineering. It relates how many things are in a system, how fast they arrive, and how long they stay.</p>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">L = &lambda; &times; W</div>
+    <div class="legend">
+      <strong>L</strong> &mdash; average number of items in the system &middot;
+      <strong>&lambda;</strong> &mdash; average arrival rate &middot;
+      <strong>W</strong> &mdash; average time each item spends in the system.<br>
+      Little's Law is a <em>theorem</em>, not an approximation: it holds for any stable system regardless of arrival distribution or service order. The conditions are that the system is observed over a long period and is not accumulating work indefinitely.
+    </div>
+  </div>
+
+  <h3 class="sub-head">Applied to requests</h3>
+  <div class="calc">
+    <div class="title">How many requests are in flight at once?</div>
+<pre>λ (throughput)     = 50 requests/second
+W (response time)  = 0.2 seconds
+
+L = 50 × 0.2
+  = 10 requests in flight at any instant</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The result that surprises people</div>
+    <p>Pocket Coach has <strong>500 concurrent users</strong>, but only <strong>10 requests</strong> are being processed at any given moment. The other 490 users are reading, typing, or idle. Sizing your server for 500 simultaneous requests would over-provision it by 50&times;.</p>
+  </div>
+
+  <h3 class="sub-head">Applied to users &mdash; the closed-model form</h3>
+  <p>When a fixed population of users loops through a journey, each user's cycle is <em>response time plus think time</em>. Little's Law then reads:</p>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">N = &lambda; &times; (R + Z)</div>
+    <div class="legend"><strong>N</strong> &mdash; number of users &middot; <strong>R</strong> &mdash; response time &middot; <strong>Z</strong> &mdash; think time. This is Little's Law with the &ldquo;system&rdquo; drawn around the users rather than the requests.</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Checking Pocket Coach for consistency</div>
+<pre>N = 500 users
+R = 0.2 s
+Z = 9.8 s      (10 s between requests, minus 0.2 s of response)
+
+λ = N / (R + Z)
+  = 500 / (0.2 + 9.8)
+  = 500 / 10
+  = 50 requests/second      ✓ matches the 6 req/user/min figure</pre>
+  </div>
+
+  <p>Two independent routes &mdash; counting requests per user per minute, and applying Little's Law &mdash; produce the same 50 RPS. That agreement is what tells you the model is sound.</p>
+
+  <h3 class="sub-head">Why a slower server needs more capacity at the same RPS</h3>
+  <div class="calc">
+    <div class="title">Response time degrades, concurrency rises</div>
+<pre>Healthy:   L = 20 × 0.5  = 10 concurrent requests
+Degraded:  L = 20 × 2.0  = 40 concurrent requests</pre>
+  </div>
+
+  <p>Throughput is unchanged at 20 RPS, yet the server must now hold <strong>four times</strong> as many requests in memory simultaneously &mdash; four times the worker threads, connections and buffers. This is the mechanism behind most cascading failures: a small latency increase multiplies concurrency, concurrency exhausts a pool, and exhaustion multiplies latency again.</p>
+
+  <div class="caveat">
+    <div class="label">Assumptions to state out loud</div>
+    <p>Little's Law needs a <strong>stable</strong> system &mdash; arrivals must not persistently exceed completions. During a spike, or once a queue is growing without bound, the system is not in steady state and <code>L = &lambda;W</code> will not describe it correctly. It is exact for the averages over a long observation window, not for any single instant.</p>
+  </div>
+</section>
+<div class="part-divider"><span class="n">PART II</span><h2>The core numbers</h2></div>
+
+<!-- ═══════════════ 6 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">6</span><h2>Throughput: RPS, TPS and conversions</h2></div>
+
+  <p><strong>Throughput</strong> is work completed per unit time. It is the measure of how much your system actually did &mdash; as opposed to how many users were present.</p>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">RPS = Total Requests &divide; Total Seconds</div>
+    <div class="legend">An average over the window. It says nothing about the shape of the load inside that window &mdash; a test that idles for 5 minutes then bursts will report the same average as a perfectly steady one.</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Basic conversion</div>
+<pre>12,000 requests over 10 minutes
+
+10 minutes  = 600 seconds
+RPS         = 12,000 / 600
+            = 20 requests/second</pre>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Unit</th><th>Conversion</th><th>At 20 RPS</th><th>Typically used by</th></tr></thead>
+    <tbody>
+      <tr><td>Requests/second</td><td>base unit</td><td class="n">20</td><td>Load tools, engineers</td></tr>
+      <tr><td>Requests/minute</td><td>&times; 60</td><td class="n">1,200</td><td>APM dashboards</td></tr>
+      <tr><td>Requests/hour</td><td>&times; 3,600</td><td class="n">72,000</td><td>Capacity planning</td></tr>
+      <tr><td>Requests/day</td><td>&times; 86,400</td><td class="n">1,728,000</td><td>Billing, business reports</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="sub-head">RPS vs TPS</h3>
+  <p><strong>Transactions per second</strong> counts business actions, not HTTP calls. If one checkout transaction issues 4 requests, then 20 TPS is 80 RPS. Always ask which unit a stakeholder means &mdash; a fourfold misunderstanding is easy here.</p>
+
+  <div class="caveat">
+    <div class="label">Throughput is an output, not an input</div>
+    <p>In a closed model (fixed VUs) you cannot <em>set</em> throughput &mdash; it emerges from how fast the server responds. If the server slows down, throughput falls even though your VU count is unchanged. Only an <strong>arrival-rate</strong> model (&sect;33) lets you specify RPS directly.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 7 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">7</span><h2>Iterations and total request count</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Total Iterations = Users &times; Iterations per user</div>
+  </div>
+
+  <div class="two-col">
+    <div class="calc">
+      <div class="title">Example A &mdash; fixed work</div>
+<pre>50 users × 20 iterations
+  = 1,000 iterations
+
+× 4 requests per iteration
+  = 4,000 requests</pre>
+    </div>
+    <div class="calc">
+      <div class="title">Example B &mdash; fixed duration</div>
+<pre>Duration          = 300 s
+Iteration takes   = 6.3 s
+Iterations per VU = 300 / 6.3 ≈ 47
+
+100 VUs × 47   = 4,700 iterations
+× 4 requests   = 18,800 requests</pre>
+    </div>
+  </div>
+
+  <p>Example B is how most real tests behave: you fix the <em>duration</em>, and the iteration count falls out of how quickly each user can complete a lap. That is why <strong>a faster server produces more requests in the same test</strong> &mdash; and why comparing raw request counts between two runs can mislead.</p>
+</section>
+
+<!-- ═══════════════ 8 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">8</span><h2>Duration and arrival rate</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Total Requests = Arrival Rate &times; Duration</div>
+    <div class="legend">Exact in an <em>open</em> model, where the tool starts requests on a clock regardless of whether earlier ones have finished.</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Arrival-rate test</div>
+<pre>20 requests/second × 300 seconds
+  = 6,000 requests
+
+This holds whether the server responds in
+20 ms or 2,000 ms — the schedule is fixed.</pre>
+  </div>
+
+  <h3 class="sub-head">Contrast with 100 VUs running continuously</h3>
+  <div class="calc">
+    <div class="title">Closed model, same duration</div>
+<pre>100 VUs, R = 0.2 s, Z = 1.8 s
+
+λ = N / (R + Z) = 100 / 2.0   = 50 RPS
+Total = 50 × 300              = 15,000 requests
+
+Now the server slows to R = 1.8 s:
+λ = 100 / (1.8 + 1.8)         = 27.8 RPS
+Total = 27.8 × 300            ≈ 8,340 requests</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The critical difference</div>
+    <p>When the server degrades, the <strong>closed</strong> model automatically sends less traffic &mdash; users are stuck waiting, so they stop asking for more. The <strong>open</strong> model keeps sending at the configured rate and lets the queue grow. Real customers behave like the open model: they arrive when they arrive, whether or not you are ready.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 9 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">9</span><h2>Response time and its components</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Response Time = t<sub>last byte received</sub> &minus; t<sub>first byte sent</sub></div>
+    <div class="legend">As observed by the client. This is what a load-testing tool reports by default.</div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 720 190" role="img" aria-label="Breakdown of a 200 millisecond response into DNS, TCP, TLS, request send, server queue, application, database, and response transfer.">
+      <text x="0" y="12" font-family="JetBrains Mono, monospace" font-size="9" fill="#6E7C8C">ANATOMY OF A 200 ms RESPONSE (client-observed)</text>
+      <g font-family="JetBrains Mono, monospace" font-size="9">
+        <rect x="0"   y="28" width="36"  height="26" fill="#94A3B8"/><text x="4" y="45" fill="#fff">DNS</text>
+        <rect x="38"  y="28" width="60"  height="26" fill="#64748B"/><text x="42" y="45" fill="#fff">TCP</text>
+        <rect x="100" y="28" width="76"  height="26" fill="#475569"/><text x="104" y="45" fill="#fff">TLS</text>
+        <rect x="178" y="28" width="30"  height="26" fill="#0B5FA5"/><text x="182" y="45" fill="#fff">req</text>
+        <rect x="210" y="28" width="72"  height="26" fill="#B45309"/><text x="214" y="45" fill="#fff">queue</text>
+        <rect x="284" y="28" width="200" height="26" fill="#0A5391"/><text x="288" y="45" fill="#fff">application</text>
+        <rect x="486" y="28" width="150" height="26" fill="#15803D"/><text x="490" y="45" fill="#fff">database</text>
+        <rect x="638" y="28" width="80"  height="26" fill="#0B5FA5"/><text x="642" y="45" fill="#fff">transfer</text>
+      </g>
+      <line x1="0" y1="62" x2="718" y2="62" stroke="#CBD5E1"/>
+      <g font-family="JetBrains Mono, monospace" font-size="8.5" fill="#44515F">
+        <text x="0"   y="76">0 ms</text>
+        <text x="210" y="76">connection established</text>
+        <text x="560" y="76">last byte</text>
+      </g>
+      <g font-family="JetBrains Mono, monospace" font-size="9" fill="#44515F">
+        <text x="0" y="104">First request on a new connection pays DNS + TCP + TLS.</text>
+        <text x="0" y="120">With keep-alive, subsequent requests skip all three and start at &quot;req&quot;.</text>
+        <text x="0" y="136" fill="#B45309">Queue time is invisible to the server's own logs — it is counted before your code runs.</text>
+      </g>
+    </svg>
+  </figure>
+
+  <div class="calc">
+    <div class="title">Component arithmetic (warm connection)</div>
+<pre>Network round trip        =  40 ms
+Server queue wait         =  20 ms
+Application processing    =  80 ms
+Database processing       =  40 ms
+Response transfer         =  20 ms
+                            ──────
+Client-observed total     = 200 ms</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">Why your APM and your load test disagree</div>
+    <p>The application's own timer starts when your handler is entered. It would report <strong>120 ms</strong> (application + database) for the request above. The load tester sees <strong>200 ms</strong>. Neither is wrong &mdash; they measure different spans. The 80 ms difference is network and queueing, and <em>your users experience it</em>. Optimising only what the APM shows can leave the actual complaint untouched.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 10 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">10</span><h2>Latency vs response time</h2></div>
+
+  <p>&ldquo;Latency&rdquo; is used to mean at least three different things. Define which one you mean in every report.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Term</th><th>Measures</th><th>Our example</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Network latency (RTT)</strong></td><td>Round trip for a packet, no processing</td><td class="n">40 ms</td></tr>
+      <tr><td><strong>Queue time</strong></td><td>Waiting for a free worker before processing</td><td class="n">20 ms</td></tr>
+      <tr><td><strong>Server processing time</strong></td><td>Application + database work</td><td class="n">120 ms</td></tr>
+      <tr><td><strong>Time to first byte (TTFB)</strong></td><td>Until the first response byte arrives</td><td class="n">180 ms</td></tr>
+      <tr><td><strong>Response time</strong></td><td>Until the <em>last</em> byte arrives</td><td class="n">200 ms</td></tr>
+    </tbody>
+    <caption>TTFB excludes the body transfer; response time includes it. For large payloads the gap is significant.</caption>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">Why backend-only measurement misleads</div>
+    <p>A team reporting &ldquo;our p95 is 120 ms&rdquo; from application metrics, while users experience 200 ms, is not lying &mdash; it is answering a different question. Under load the gap <em>widens</em>, because queue time grows fastest of all the components. A backend-only view can look flat while the customer-facing number doubles.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 11 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">11</span><h2>Percentiles and why the average lies</h2></div>
+
+  <p>Take 100 requests. Ninety-five are healthy at 140&ndash;160 ms. Five hit a slow path at 2.8&ndash;3.2 s.</p>
+
+  <div class="calc">
+    <div class="title">The same dataset, six different summaries</div>
+<pre>Dataset:  95 requests at 140–160 ms
+           5 requests at 2,800–3,200 ms
+
+Mean (average)      =   291.9 ms
+Median (p50)        =   150 ms
+p90                 =   159 ms
+p95                 =   292 ms
+p99                 = 3,101 ms
+Maximum             = 3,200 ms</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The average describes nobody</div>
+    <p>The mean is <strong>291.9 ms</strong> &mdash; yet <strong>only 5 of the 100 requests</strong> were slower than that. Ninety-five users had an experience roughly <em>twice as fast</em> as the &ldquo;average&rdquo;, and five had one <em>ten times slower</em>. No user experienced 292 ms. The average is a number that describes the arithmetic, not the customer.</p>
+  </div>
+
+  <h3 class="sub-head">How to read each percentile</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Statistic</th><th>Meaning</th><th>Use it for</th></tr></thead>
+    <tbody>
+      <tr><td>p50 / median</td><td>Half of requests were faster</td><td>The typical experience</td></tr>
+      <tr><td>p90</td><td>9 in 10 were faster</td><td>Everyday quality</td></tr>
+      <tr><td>p95</td><td>19 in 20 were faster</td><td><strong>The usual SLA target</strong></td></tr>
+      <tr><td>p99</td><td>99 in 100 were faster</td><td>Tail pain; where outages hide</td></tr>
+      <tr><td>p99.9</td><td>999 in 1,000 were faster</td><td>High-volume systems only</td></tr>
+      <tr><td>Maximum</td><td>The single worst sample</td><td>Little value &mdash; one blip sets it</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">Percentiles do not average</div>
+    <p>You <strong>cannot</strong> average two p95 values to get a combined p95, and you cannot average p95 across time buckets. Doing so is a common and serious reporting error. Percentiles must be recomputed from the underlying samples &mdash; which is why tools keep either all samples or a statistical sketch of them.</p>
+  </div>
+
+  <p>A typical target pair is <code>p95 &lt; 500 ms</code> and <code>p99 &lt; 1 s</code>. This says &ldquo;almost everyone is fast, and even the unlucky are not abandoned&rdquo; &mdash; a claim an average can never make.</p>
+</section>
+
+<!-- ═══════════════ 12 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">12</span><h2>Error rate and HTTP status meanings</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Error Rate = Failed &divide; Total &times; 100</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Worked example</div>
+<pre>Total requests   = 10,000
+Failed requests  =    500
+
+Error rate    = 500 / 10,000 × 100   = 5.0%
+Success rate  = 9,500 / 10,000 × 100 = 95.0%</pre>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th class="n">Code</th><th>Meaning</th><th>In a load test it usually indicates</th></tr></thead>
+    <tbody>
+      <tr><td class="n">400</td><td>Bad Request</td><td>Your test data or payload is wrong &mdash; a <em>test</em> defect</td></tr>
+      <tr><td class="n">401</td><td>Unauthorized</td><td>Token missing or expired mid-run</td></tr>
+      <tr><td class="n">403</td><td>Forbidden</td><td>Authenticated but not permitted &mdash; often wrong role</td></tr>
+      <tr><td class="n">404</td><td>Not Found</td><td>Placeholder IDs that were never filled in</td></tr>
+      <tr><td class="n">409</td><td>Conflict</td><td>Concurrency collision &mdash; a genuine finding</td></tr>
+      <tr><td class="n">422</td><td>Unprocessable</td><td>Valid JSON, invalid business content</td></tr>
+      <tr><td class="n">429</td><td>Too Many Requests</td><td>Rate limiting engaged &mdash; you found a real ceiling</td></tr>
+      <tr><td class="n">500</td><td>Internal Server Error</td><td>Unhandled exception &mdash; the most serious signal</td></tr>
+      <tr><td class="n">502</td><td>Bad Gateway</td><td>Backend died or returned garbage to the proxy</td></tr>
+      <tr><td class="n">503</td><td>Service Unavailable</td><td>Overloaded or shedding load deliberately</td></tr>
+      <tr><td class="n">504</td><td>Gateway Timeout</td><td>Backend too slow &mdash; classic saturation symptom</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">Triage rule</div>
+    <p><strong>4xx errors usually mean your test is wrong. 5xx errors usually mean the system is wrong.</strong> A wall of 401s or 404s at the start of a run almost always means missing tokens or unfilled ID placeholders &mdash; fix the test before reporting an incident. A rising rate of 500/503/504 <em>as load increases</em> is the real thing you came to find.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 13 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">13</span><h2>Ramp-up arithmetic</h2></div>
+
+  <div class="calc">
+    <div class="title">0 → 100 VUs over 5 minutes</div>
+<pre>Users to add   = 100
+Ramp duration  = 5 minutes = 300 seconds
+
+Arrival rate of users = 100 / 300
+                      = 0.333 users/second
+                      ≈ one new user every 3 seconds</pre>
+  </div>
+
+  <p>Ramp-up exists for three reasons, and skipping it invalidates results in three ways:</p>
+  <ul>
+    <li><strong>Caches warm up.</strong> The first requests hit cold caches and empty connection pools. Starting at full load measures your cold-start path, not your steady state.</li>
+    <li><strong>Autoscaling needs time.</strong> If your platform adds instances on demand, an instant jump measures the scaling lag, not the scaled system.</li>
+    <li><strong>You can see <em>where</em> it breaks.</strong> A gradual ramp shows the load level at which latency turns upward. A step function tells you only pass or fail.</li>
+  </ul>
+
+  <div class="caveat">
+    <div class="label">Ramp time is not test time</div>
+    <p>Averages computed over the whole run include the lightly loaded ramp period and will flatter your results. Report the <strong>steady-state window</strong> separately &mdash; typically from the end of the ramp to the start of the ramp-down.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 14 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">14</span><h2>Spike testing</h2></div>
+
+  <div class="calc">
+    <div class="title">50 → 1,000 VUs in 10 seconds</div>
+<pre>Increase       = 1,000 − 50 = 950 VUs
+Over           = 10 seconds
+
+Rate of arrival = 95 new virtual users per second
+Multiple        = 20× the starting load</pre>
+  </div>
+
+  <p>What each layer experiences in those ten seconds:</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Layer</th><th>What happens</th><th>Failure mode</th></tr></thead>
+    <tbody>
+      <tr><td>Load generator</td><td>950 workers created, sockets opened</td><td>Generator saturates first and never delivers the spike</td></tr>
+      <tr><td>Network / OS</td><td>Burst of TCP handshakes, TLS negotiations</td><td>Ephemeral port or file-descriptor exhaustion</td></tr>
+      <tr><td>Load balancer</td><td>Connection table fills</td><td>New connections refused or queued</td></tr>
+      <tr><td>App server</td><td>Worker pool fully occupied</td><td>Requests queue; latency climbs before any error appears</td></tr>
+      <tr><td>Connection pool</td><td>All DB connections borrowed</td><td>Threads block waiting for a connection</td></tr>
+      <tr><td>Database</td><td>Query concurrency spikes; locks contend</td><td>Lock waits, then timeouts</td></tr>
+      <tr><td>CPU / RAM</td><td>Utilisation jumps; garbage collection intensifies</td><td>GC pauses add latency exactly when you can least afford it</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">What a spike test is really asking</div>
+    <p>Not &ldquo;can we serve 1,000 users?&rdquo; but <strong>&ldquo;do we degrade gracefully or collapse, and do we recover?&rdquo;</strong> The most valuable part of a spike test is the minute <em>after</em> the spike ends. A system that returns to baseline latency has healthy back-pressure. One that stays degraded has a queue it cannot drain, or a leak.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 15 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">15</span><h2>Think time</h2></div>
+
+  <p>Think time is the pause between a user's actions &mdash; reading a screen, typing, deciding. It is the difference between simulating people and simulating a denial-of-service attack.</p>
+
+  <div class="calc">
+    <div class="title">A realistic journey</div>
+<pre>GET  /feed        200 ms   →  think 3 s
+GET  /profile     150 ms   →  think 5 s
+POST /comment     250 ms   →  think 4 s
+                  ──────      ──────
+Work              600 ms     Waiting  12 s
+
+Iteration = 12.6 s, of which 4.8% is server work</pre>
+  </div>
+
+  <h3 class="sub-head">Think time is a throughput dial</h3>
+  <p>The same 100 VUs produce wildly different load depending only on think time:</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Scenario</th><th class="n">R</th><th class="n">Z</th><th class="n">RPS from 100 VUs</th></tr></thead>
+    <tbody>
+      <tr><td>No think time (machine-gun)</td><td class="n">0.2 s</td><td class="n">0 s</td><td class="n bad">500</td></tr>
+      <tr><td>1 second think time</td><td class="n">0.2 s</td><td class="n">1 s</td><td class="n">83.3</td></tr>
+      <tr><td>Realistic user (Pocket Coach)</td><td class="n">0.2 s</td><td class="n">9.8 s</td><td class="n good">10</td></tr>
+      <tr><td>Slow API, no think time</td><td class="n">2.0 s</td><td class="n">0 s</td><td class="n">50</td></tr>
+    </tbody>
+    <caption>All four rows use &lambda; = N / (R + Z) with N = 100. The first and third differ by <strong>50&times;</strong> &mdash; same &ldquo;100 users&rdquo;.</caption>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">Why two teams both testing &ldquo;100 users&rdquo; get different answers</div>
+    <p>Because &ldquo;100 users&rdquo; is not a load specification. Without stating think time, a VU count communicates almost nothing. <strong>Always report VUs and think time together, or report throughput instead.</strong></p>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Zero think time is not &ldquo;worst case&rdquo; &mdash; it is a different case</div>
+    <p>Removing think time is sometimes defended as conservative. It does produce more load, but it also produces <em>unrealistic</em> load: perfect connection reuse, hot caches, and no idle connections held open. It is a legitimate way to find a throughput ceiling; it is not a simulation of your users.</p>
+  </div>
+</section>
+<div class="part-divider"><span class="n">PART III</span><h2>The machinery</h2></div>
+
+<!-- ═══════════════ 16 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">16</span><h2>Connections and protocol behaviour</h2></div>
+
+  <p>Every request travels over a TCP connection. Whether that connection is new or reused changes both what you measure and what you cost the server.</p>
+
+  <div class="calc">
+    <div class="title">Cost of a cold connection vs a warm one</div>
+<pre>New connection (HTTPS):
+  TCP handshake     ~1 round trip
+  TLS handshake     ~1–2 round trips
+  Request           ~1 round trip
+                    ─────────────
+                    3–4 round trips
+
+Reused connection (keep-alive):
+  Request           ~1 round trip
+
+On a 40 ms round trip, that is roughly
+160 ms versus 40 ms for the same request.</pre>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Protocol</th><th>Concurrency model</th><th>Effect on load testing</th></tr></thead>
+    <tbody>
+      <tr><td>HTTP/1.1</td><td>One request at a time per connection; browsers open ~6 per host</td><td>Concurrency is bounded by connection count; head-of-line blocking</td></tr>
+      <tr><td>HTTP/2</td><td>Many streams multiplexed over one connection</td><td>Far fewer sockets for the same load; one connection can carry huge concurrency</td></tr>
+      <tr><td>HTTP/3 (QUIC)</td><td>Multiplexed over UDP, no TCP head-of-line blocking</td><td>Better on lossy networks; different OS resource profile</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">Two settings that silently change your results</div>
+    <p><strong>Connection reuse</strong> &mdash; disabling keep-alive multiplies handshakes, inflating both measured latency and generator CPU (TLS is expensive). <strong>Redirect following</strong> &mdash; doubles the request count for every redirecting endpoint. Both are defensible choices; both must be stated when you report numbers, because they are not comparable across runs that configured them differently.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 17 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">17</span><h2>Inside the load generator machine</h2></div>
+
+  <p>This section is the one most often skipped, and it is where untrustworthy results are born. The generator is a computer running a demanding program, subject to exactly the same limits as the system it is testing.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Resource</th><th>What consumes it</th><th>Symptom when exhausted</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CPU</strong></td><td>TLS encryption, JSON parsing, metric aggregation, scheduling</td><td>Requests are issued late; measured latency inflates</td></tr>
+      <tr><td><strong>RAM</strong></td><td>Per-VU state, response bodies, buffered results</td><td>Swapping, or an out-of-memory crash mid-run</td></tr>
+      <tr><td><strong>Sockets / ports</strong></td><td>One ephemeral port per connection; ports linger in TIME_WAIT</td><td>Connection failures that look like server errors</td></tr>
+      <tr><td><strong>File descriptors</strong></td><td>Every socket and open file</td><td>&ldquo;Too many open files&rdquo; &mdash; a generator fault, not a server fault</td></tr>
+      <tr><td><strong>Threads</strong></td><td>Thread-per-VU tools allocate one per user</td><td>Context-switching overhead grows faster than useful work</td></tr>
+      <tr><td><strong>Garbage collection</strong></td><td>Managed runtimes (JVM, .NET) pause to reclaim memory</td><td>Pauses land inside measurements, inflating the tail</td></tr>
+      <tr><td><strong>Disk / logging</strong></td><td>Writing every sample to a results file</td><td>I/O stalls that appear as latency spikes</td></tr>
+      <tr><td><strong>Network</strong></td><td>Aggregate bandwidth of all VUs</td><td>Link saturation caps throughput regardless of VU count</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">The load generator is a system under test too</div>
+    <p>Every millisecond the generator spends waiting for a CPU slice, running garbage collection, or blocking on a log write is a millisecond that lands in your latency figure &mdash; attributed to the server. <strong>If you do not monitor the generator, you cannot know whether you measured the system or the measuring device.</strong></p>
+  </div>
+</section>
+
+<!-- ═══════════════ 18 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">18</span><h2>Load generator overhead</h2></div>
+
+  <p>Two different overheads exist and they must never be conflated:</p>
+
+  <div class="two-col">
+    <div class="calc">
+      <div class="title">Target-system overhead</div>
+<pre>Time the server genuinely
+spends on the request:
+
+  queueing
++ application logic
++ database work
++ serialisation
+
+This is what you want to measure.</pre>
+    </div>
+    <div class="calc">
+      <div class="title">Load-generator overhead</div>
+<pre>Time added by the measuring
+device before and after:
+
+  scheduling delay
++ TLS work
++ request construction
++ response parsing
++ metric recording
+
+This contaminates what you measure.</pre>
+    </div>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Do not accept a fixed number for generator overhead</div>
+    <p>You will see claims that a given tool &ldquo;adds <em>X</em> milliseconds per request&rdquo;. <strong>Treat any such fixed figure as unreliable.</strong> Generator overhead is not a constant: it depends on concurrency, payload size, TLS, connection reuse, logging, CPU headroom and the runtime's garbage collector. The <em>only</em> valid figure is one measured in your own environment, at the concurrency your real test will use &mdash; see &sect;29 for how.</p>
+  </div>
+
+  <h3 class="sub-head">Why a saturated generator invalidates a test</h3>
+  <div class="calc">
+    <div class="title">A result you must discard</div>
+<pre>Target API reports  :  p95 = 500 ms
+Load generator      :  CPU = 95%, network saturated
+
+Two problems, both fatal:
+
+1. The generator cannot issue requests on schedule,
+   so the target never received the intended load.
+
+2. Time spent queueing inside the generator is
+   counted as response time, inflating every figure.</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The rule</div>
+    <p><strong>If the load generator cannot generate the requested load, the target server never received the intended load</strong> &mdash; and any conclusion about the target's capacity is unfounded. A test where the generator is pinned tells you about the generator.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 19 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">19</span><h2>Distributed load generation</h2></div>
+
+  <p>When one machine cannot produce the required load, you run several &mdash; a controller coordinating multiple workers, with results merged afterwards.</p>
+
+  <div class="calc">
+    <div class="title">Naive division</div>
+<pre>Target load           = 10,000 RPS
+Measured per machine  =  2,000 RPS
+
+Generators needed = 10,000 / 2,000
+                  = 5</pre>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Five is the wrong answer</div>
+    <p>That calculation runs every machine at <strong>100% of its measured ceiling</strong> &mdash; precisely the saturated condition &sect;18 says invalidates results. Size for headroom instead:</p>
+  </div>
+
+  <div class="calc">
+    <div class="title">Sizing with headroom</div>
+<pre>Usable per machine at 70% = 2,000 × 0.70 = 1,400 RPS
+
+Generators needed = 10,000 / 1,400
+                  = 7.14  →  8 machines</pre>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Consideration</th><th>Why it complicates distributed testing</th></tr></thead>
+    <tbody>
+      <tr><td>Result merging</td><td>Percentiles cannot be averaged across machines (&sect;11); raw samples or sketches must be combined</td></tr>
+      <tr><td>Clock skew</td><td>Machines disagree on time, blurring the timeline</td></tr>
+      <tr><td>Uneven capacity</td><td>A slower machine silently contributes less load than assumed</td></tr>
+      <tr><td>Network position</td><td>Generators in different regions measure different latencies</td></tr>
+      <tr><td>Coordination cost</td><td>The controller itself consumes resources and can bottleneck</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════════════ 20 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">20</span><h2>CPU calculations and the Utilization Law</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">U = X &times; D</div>
+    <div class="legend"><strong>U</strong> &mdash; utilisation (in CPU-seconds per second, i.e. cores busy) &middot; <strong>X</strong> &mdash; throughput &middot; <strong>D</strong> &mdash; service demand, the CPU-seconds one request consumes. This is the Utilization Law from queueing theory; it is exact for a given resource. <strong>D must be measured</strong>, not guessed.</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Pocket Coach CPU model</div>
+<pre>Measured service demand  D = 0.040 s CPU per request
+Throughput               X = 50 requests/second
+Cores available            = 16
+
+Cores busy   = 50 × 0.040     = 2.0 cores
+Utilisation  = 2.0 / 16 × 100 = 12.5%</pre>
+  </div>
+
+  <div class="calc">
+    <div class="title">Where the CPU ceiling is</div>
+<pre>Theoretical maximum  = cores / D
+                     = 16 / 0.040
+                     = 400 requests/second
+
+Safe target at 70%   = (16 × 0.70) / 0.040
+                     = 280 requests/second</pre>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Limits of this simplification</div>
+    <ul style="margin:.3rem 0 0">
+      <li><strong>Perfect parallelism is assumed.</strong> Real workloads have serial sections; Amdahl's law caps the benefit of extra cores.</li>
+      <li><strong>Hyper-threaded &ldquo;cores&rdquo; are not full cores.</strong> 16 logical threads on 8 physical cores deliver well under 16 cores of work.</li>
+      <li><strong>Utilisation is not linear near saturation.</strong> Past roughly 70&ndash;80%, queueing makes response time rise sharply &mdash; see &sect;24.</li>
+      <li><strong>D is not constant.</strong> Cache misses, garbage collection and larger payloads all change it under load.</li>
+    </ul>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Concept</th><th>Definition</th><th>Warning sign</th></tr></thead>
+    <tbody>
+      <tr><td>Utilisation</td><td>Fraction of time the CPU is busy</td><td>Sustained &gt; 80% &mdash; queueing begins</td></tr>
+      <tr><td>Saturation</td><td>Work waiting because the CPU is full</td><td>Run queue length exceeds core count</td></tr>
+      <tr><td>Context switching</td><td>Swapping between runnable threads</td><td>Thousands per second per core wastes real capacity</td></tr>
+      <tr><td>Throttling</td><td>Container CPU quota enforced</td><td>Latency spikes with utilisation apparently below 100%</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════════════ 21 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">21</span><h2>Memory calculations</h2></div>
+
+  <div class="calc">
+    <div class="title">Budgeting 32 GB</div>
+<pre>Total RAM              = 32 GB
+
+Operating system       =  4 GB
+Application heap       = 10 GB
+PostgreSQL             =  8 GB
+Redis cache            =  4 GB
+                         ──────
+Allocated              = 26 GB
+Remaining headroom     =  6 GB</pre>
+  </div>
+
+  <p>Six gigabytes of headroom is not slack &mdash; it absorbs connection buffers, request bodies held in flight, and the memory spike that accompanies a traffic surge. Under load, concurrency rises (&sect;5), and every in-flight request holds memory until it completes.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Region</th><th>Holds</th><th>Grows with</th></tr></thead>
+    <tbody>
+      <tr><td>Heap</td><td>Objects with dynamic lifetime</td><td>Concurrency and payload size</td></tr>
+      <tr><td>Stack</td><td>Call frames, one region per thread</td><td>Thread count</td></tr>
+      <tr><td>Buffers</td><td>Socket send/receive queues</td><td>Connection count</td></tr>
+      <tr><td>Page cache</td><td>Recently read file/disk pages</td><td>Working-set size &mdash; usually beneficial</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">Memory pressure appears as latency, not as errors</div>
+    <p>Before anything runs out of memory, the symptoms are <strong>more frequent garbage collection</strong> (in managed runtimes) and <strong>page-cache eviction</strong> (so reads that used to hit memory now hit disk). Both show up as rising p99 while utilisation graphs look calm. A soak test (&sect;26) is the reliable way to expose this.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 22 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">22</span><h2>Database calculations</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Query rate = RPS &times; Queries per request</div>
+    <div class="legend">Exact given a fixed query count per request. In practice the count varies by endpoint and by cache outcome &mdash; see &sect;23.</div>
+  </div>
+
+  <div class="two-col">
+    <div class="calc">
+      <div class="title">At current load</div>
+<pre>100 RPS × 3 queries
+  = 300 queries/second</pre>
+    </div>
+    <div class="calc">
+      <div class="title">At 5× load</div>
+<pre>500 RPS × 3 queries
+  = 1,500 queries/second</pre>
+    </div>
+  </div>
+
+  <div class="keybox">
+    <div class="label">API throughput and database throughput are different numbers</div>
+    <p>A modest 100 RPS at the API becomes <strong>300 queries per second</strong> at the database. Capacity planning that watches only the API rate will miss the tier that actually fails first. And if an endpoint has an N+1 query problem, the multiplier is not 3 but 3 + <em>N</em> &mdash; which is why load tests so often surface N+1 bugs that functional tests never noticed.</p>
+  </div>
+
+  <h3 class="sub-head">Connection pools &mdash; the most common hidden ceiling</h3>
+  <div class="calc">
+    <div class="title">Pool sizing by Little's Law</div>
+<pre>Query rate      = 300 queries/second
+Query duration  = 0.010 s
+
+Connections in use = 300 × 0.010 = 3 connections
+
+If the query slows to 0.100 s:
+Connections in use = 300 × 0.100 = 30 connections</pre>
+  </div>
+
+  <p>A pool of 20 connections is comfortable in the first case and <strong>exhausted</strong> in the second. Once exhausted, application threads block <em>waiting for a connection</em> &mdash; time that appears as application latency, with no database error to point at. This is one of the most misdiagnosed failure modes in web systems.</p>
+</section>
+
+<!-- ═══════════════ 23 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">23</span><h2>Cache hit ratio</h2></div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Hit Ratio = Hits &divide; Total &times; 100</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Redis in front of Pocket Coach reads</div>
+<pre>Total requests  = 1,000
+Cache hits      =   900
+Cache misses    =   100
+
+Hit ratio = 900 / 1,000 × 100 = 90%</pre>
+  </div>
+
+  <div class="calc">
+    <div class="title">What that does to database load</div>
+<pre>Without cache:  50 RPS × 3 queries              = 150 queries/s
+With 90% hits:  50 RPS × 3 queries × (1 − 0.90) =  15 queries/s
+
+Reduction factor = 10×</pre>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Hit ratio is a load-dependent variable, not a constant</div>
+    <p>A load test that hammers <strong>the same record</strong> thousands of times will show a 99% hit ratio that your real, diverse traffic will never achieve &mdash; making the database look far healthier than it is. Conversely, a cold cache at test start understates it. <strong>Parameterise your test data</strong> so the spread of keys resembles production, and always report the hit ratio alongside the latency figures.</p>
+  </div>
+
+  <p>The arithmetic also explains cache-failure blast radius: if Redis becomes unavailable, database load jumps from 15 to 150 queries per second instantly &mdash; a <strong>10&times; step change</strong> with no warning. Testing that scenario deliberately is worthwhile.</p>
+</section>
+
+<!-- ═══════════════ 24 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">24</span><h2>Queueing: why latency explodes</h2></div>
+
+  <p>Everything above assumes work is served as it arrives. When arrivals exceed service capacity, a queue forms &mdash; and queues behave non-intuitively.</p>
+
+  <div class="calc">
+    <div class="title">Arrivals exceed service by 25%</div>
+<pre>Arrival rate  = 100 requests/second
+Service rate  =  80 requests/second
+
+Backlog growth = 100 − 80 = 20 requests/second
+
+After 60 seconds:
+Queue length   = 20 × 60 = 1,200 requests
+Wait for the last arrival = 1,200 / 80 = 15 seconds</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">A 25% overload does not make things 25% slower</div>
+    <p>It makes them <strong>unboundedly</strong> slower. The queue grows for as long as the overload persists, so response time grows without limit &mdash; from 200 ms to 15 seconds in one minute here. This is why systems appear to fail suddenly rather than gradually.</p>
+  </div>
+
+  <h3 class="sub-head">The degradation sequence</h3>
+  <div class="chain">
+    <div class="step"><div class="who">1 · Queue</div><div class="what">Arrivals exceed service. Requests wait before processing begins.</div></div>
+    <div class="step"><div class="who">2 · Latency</div><div class="what">Queue wait is added to every response time. p99 moves first, then p95.</div></div>
+    <div class="step"><div class="who">3 · Concurrency</div><div class="what">By Little's Law, higher <em>W</em> means higher <em>L</em> &mdash; more requests held in memory at once.</div></div>
+    <div class="step"><div class="who">4 · Exhaustion</div><div class="what">Threads, connections or memory run out. New work is refused or blocks.</div></div>
+    <div class="step"><div class="who">5 · Timeouts</div><div class="what">Clients give up. 504s appear. Work already done is wasted.</div></div>
+    <div class="step"><div class="who">6 · Retries</div><div class="what">Clients retry, <em>adding</em> load to an overloaded system (&sect;32). The failure accelerates.</div></div>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Utilisation and latency are not linearly related</div>
+    <p>Standard queueing results show waiting time scaling roughly with <code>1 / (1 &minus; U)</code>, where <em>U</em> is utilisation. Going from 50% to 60% utilisation barely moves latency; going from 90% to 95% roughly <em>doubles</em> it. This is the mathematical reason capacity planning targets 70&ndash;80% rather than 95% &mdash; the last slice of utilisation is bought with disproportionate latency. The exact relationship depends on the arrival and service distributions, so treat this as the shape of the curve rather than a formula to compute with.</p>
+  </div>
+</section>
+<div class="part-divider"><span class="n">PART IV</span><h2>Applying it</h2></div>
+
+<!-- ═══════════════ 25 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">25</span><h2>Capacity, saturation and breaking point</h2></div>
+
+  <p>Run the same scenario at increasing load and record throughput, latency and errors at each level. The shape of the resulting curve is the answer to &ldquo;how many users can we handle?&rdquo;</p>
+
+  <div class="tw"><table>
+    <thead><tr><th class="n">VUs</th><th class="n">Throughput</th><th class="n">p95</th><th class="n">Errors</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td class="n">100</td><td class="n">50 RPS</td><td class="n">200 ms</td><td class="n">0%</td><td class="good">Healthy &mdash; linear region</td></tr>
+      <tr><td class="n">200</td><td class="n">98 RPS</td><td class="n">250 ms</td><td class="n">0%</td><td class="good">Still linear &mdash; doubling load nearly doubled throughput</td></tr>
+      <tr><td class="n">400</td><td class="n">182 RPS</td><td class="n">400 ms</td><td class="n">0.1%</td><td class="warncell">Knee &mdash; throughput gain falling behind load</td></tr>
+      <tr><td class="n">600</td><td class="n">222 RPS</td><td class="n">900 ms</td><td class="n">2%</td><td class="warncell">Saturation &mdash; latency rising fast, throughput nearly flat</td></tr>
+      <tr><td class="n">800</td><td class="n">186 RPS</td><td class="n">2.5 s</td><td class="n">10%</td><td class="bad">Past breaking point &mdash; throughput <em>fell</em></td></tr>
+    </tbody>
+    <caption>Throughput computed as &lambda; = N / (R + Z) with a constant think time Z = 1.8 s, so every row is internally consistent with Little's Law.</caption>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">The signature of a broken system: throughput goes down</div>
+    <p>Between 600 and 800 VUs, load increased by a third while throughput <strong>dropped from 222 to 186 RPS</strong>. This is the defining symptom of saturation collapse &mdash; the system is spending its capacity on queueing, context switching, timeouts and retries rather than on useful work. Adding load past this point makes the system serve <em>fewer</em> customers, not more.</p>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Term</th><th>Definition</th><th>In the table above</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Capacity</strong></td><td>Maximum load meeting your SLA</td><td>~400 VUs / 182 RPS if the SLA is p95 &lt; 500 ms</td></tr>
+      <tr><td><strong>Knee</strong></td><td>Where latency starts rising disproportionately</td><td>Between 200 and 400 VUs</td></tr>
+      <tr><td><strong>Saturation</strong></td><td>A resource is fully consumed; queueing dominates</td><td>600 VUs</td></tr>
+      <tr><td><strong>Breaking point</strong></td><td>Throughput declines as load increases</td><td>Between 600 and 800 VUs</td></tr>
+      <tr><td><strong>Bottleneck</strong></td><td>The specific resource that saturates first</td><td>Not visible here &mdash; requires server-side metrics</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">This table alone cannot name the bottleneck</div>
+    <p>Client-side numbers tell you <em>that</em> the system saturated and roughly <em>where</em>. They cannot tell you <em>why</em>. Naming the bottleneck requires server-side evidence gathered during the same run: CPU per tier, memory, connection-pool waits, database query time, disk I/O. Always collect both sides, or your report ends at &ldquo;it got slow&rdquo;.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 26 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">26</span><h2>The five test types compared</h2></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Type</th><th>Question it answers</th><th>Typical shape</th><th>Watch for</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Smoke</strong></td><td>Does the test itself work?</td>
+        <td>1&ndash;2 VUs, 30&ndash;60 s</td>
+        <td>Auth working, IDs valid, no 4xx storm</td>
+      </tr>
+      <tr>
+        <td><strong>Load</strong></td><td>Do we meet the SLA at expected traffic?</td>
+        <td>Ramp to expected peak, hold 15&ndash;30 min</td>
+        <td>p95/p99 against threshold, error rate, steady throughput</td>
+      </tr>
+      <tr>
+        <td><strong>Stress</strong></td><td>Where does it break, and how?</td>
+        <td>Ramp well past peak until failure</td>
+        <td>The knee, the breaking point, whether failure is graceful</td>
+      </tr>
+      <tr>
+        <td><strong>Spike</strong></td><td>Can we survive a sudden surge and recover?</td>
+        <td>Baseline &rarr; 10&ndash;20&times; in seconds &rarr; baseline</td>
+        <td>Error burst, autoscaling lag, <strong>recovery time</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Soak</strong></td><td>Does it survive sustained normal traffic?</td>
+        <td>Moderate load, 4&ndash;24 hours</td>
+        <td>Latency drift, memory growth, connection leaks</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="calc">
+    <div class="title">Soak test volume &mdash; 8 hours at 10 RPS</div>
+<pre>Requests = 10 × 3,600 × 8
+         = 288,000 requests
+
+A leak of just 1 KB per request would consume
+288 MB over the run — invisible in a 5-minute test.</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">Why soak tests find what nothing else can</div>
+    <p>Memory leaks, connection leaks, file-descriptor leaks, log-disk exhaustion and slow index degradation are all <strong>functions of cumulative work</strong>, not of instantaneous load. A short test at high load cannot find them; only time at moderate load can. Look for a <em>trend</em> in p95 across the hours &mdash; a flat line is the pass condition.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 27 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">27</span><h2>How tools turn configuration into traffic</h2></div>
+
+  <p>Regardless of which tool you use, the same four responsibilities exist. The differences between tools are choices about <em>how</em> to discharge them.</p>
+
+  <div class="chain">
+    <div class="step"><div class="who">Schedule</div><div class="what">Decide when each virtual user starts and when it repeats. Closed models start the next iteration when the previous finishes; open models start on a clock.</div></div>
+    <div class="step"><div class="who">Execute</div><div class="what">Build the request, apply auth and variables, write it to a socket, read the response, run assertions.</div></div>
+    <div class="step"><div class="who">Measure</div><div class="what">Timestamp before and after, classify the outcome, attach tags (endpoint, status, scenario).</div></div>
+    <div class="step"><div class="who">Aggregate</div><div class="what">Fold samples into counters, rates and percentile structures &mdash; usually incrementally, because storing every sample is expensive.</div></div>
+  </div>
+
+  <h3 class="sub-head">The concurrency model is the main design axis</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Model</th><th>How VUs map to the OS</th><th>Trade-off</th></tr></thead>
+    <tbody>
+      <tr><td>Thread-per-VU</td><td>One OS thread per virtual user</td><td>Simple and easy to reason about; memory and context-switching cost grow with VU count</td></tr>
+      <tr><td>Lightweight tasks</td><td>Many VUs multiplexed onto a few OS threads</td><td>Far more VUs per machine; requires non-blocking I/O throughout</td></tr>
+      <tr><td>Event loop</td><td>Single-threaded loop with async I/O</td><td>Very low overhead per connection; one slow callback blocks everything</td></tr>
+      <tr><td>Multi-process</td><td>Separate processes, often one per core</td><td>Uses all cores and isolates failures; results must be merged</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">Percentile storage is an engineering trade-off</div>
+    <p>Exact percentiles require every sample. At 10,000 RPS for an hour that is 36 million values per metric. Tools therefore use <strong>reservoir sampling</strong>, <strong>histograms</strong> or <strong>t-digest</strong> structures &mdash; each approximate in a different way. When two tools disagree slightly on p99, the storage strategy is often the reason, not the measurement.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 28 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">28</span><h2>The identical scenario in two tools</h2></div>
+
+  <div class="calc">
+    <div class="title">The scenario both tools must implement</div>
+<pre>500 virtual users
+20 requests/second target
+5-minute test
+3 API requests per iteration</pre>
+  </div>
+
+  <h3 class="sub-head">First: those numbers conflict</h3>
+  <p>500 VUs and 20 RPS cannot both be free parameters. Little's Law fixes the relationship:</p>
+
+  <div class="calc">
+    <div class="title">Reconciling the specification</div>
+<pre>N = λ × (R + Z)
+
+500 = 20 × (R + Z)
+R + Z = 25 seconds per iteration
+
+With 3 requests per iteration at R = 0.2 s each:
+Work per iteration = 0.6 s
+Think time needed  = 25 − 0.6 = 24.4 s per iteration
+
+Total requests = 20 × 300 = 6,000
+Iterations     = 6,000 / 3 = 2,000</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">A specification worth challenging</div>
+    <p>Requiring 500 VUs to produce only 20 RPS means each simulated user acts once every 25 seconds. That may be realistic for a reading-heavy app &mdash; or it may mean whoever wrote the requirement conflated &ldquo;users&rdquo; with &ldquo;requests&rdquo;. <strong>Reconcile the numbers before running anything.</strong> If you cannot make them agree, the specification is the defect.</p>
+  </div>
+
+  <h3 class="sub-head">What differs between implementations</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Aspect</th><th>Why tools differ</th></tr></thead>
+    <tbody>
+      <tr><td>VU representation</td><td>OS threads versus lightweight tasks &mdash; changes memory and scheduling cost per VU</td></tr>
+      <tr><td>Request scheduling</td><td>Whether the tool targets a VU count, an arrival rate, or both</td></tr>
+      <tr><td>Connection handling</td><td>Pool size, keep-alive defaults, HTTP/2 support</td></tr>
+      <tr><td>Runtime overhead</td><td>Managed runtimes pause for garbage collection; native ones do not</td></tr>
+      <tr><td>Metric aggregation</td><td>Exact samples versus histograms versus sketches</td></tr>
+      <tr><td>Result output</td><td>Writing every sample to disk costs I/O that a summary-only tool avoids</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">On comparing measurements between tools</div>
+    <p>Two tools running &ldquo;the same&rdquo; test can report different latencies, and the difference is <strong>not</strong> a fixed per-request constant. It varies with concurrency, payload size, connection reuse, TLS, logging configuration and how much CPU headroom the generator has. Any claim of the form &ldquo;tool X always adds <em>n</em> ms&rdquo; should be rejected. <strong>If the difference matters to your decision, measure it in your environment using the calibration method in &sect;29</strong> &mdash; and re-measure at the concurrency you actually intend to run.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 29 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">29</span><h2>Measuring your generator's overhead</h2></div>
+
+  <p>Since generator overhead is variable, the only defensible figure is one you measure. The method is simple and worth doing once per environment.</p>
+
+  <div class="chain">
+    <div class="step"><div class="who">Step 1</div><div class="what">Build a target of <strong>known, fixed latency</strong> &mdash; a trivial endpoint that sleeps for exactly <em>T</em> milliseconds and returns a small body. A timer, not computation, so the target uses almost no CPU.</div></div>
+    <div class="step"><div class="who">Step 2</div><div class="what">Run your load tool against it at the <strong>same concurrency</strong> your real test will use.</div></div>
+    <div class="step"><div class="who">Step 3</div><div class="what">Compute <code>&epsilon; = reported &minus; T</code>. That is your instrument's overhead <em>at that concurrency</em>.</div></div>
+    <div class="step"><div class="who">Step 4</div><div class="what">Repeat at several concurrency levels. Overhead typically <strong>grows</strong> with concurrency &mdash; the curve matters more than any single point.</div></div>
+  </div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">&epsilon; = T<sub>reported</sub> &minus; T<sub>true</sub></div>
+    <div class="legend">Valid only because <em>T</em><sub>true</sub> is known by construction. This is the one situation in load testing where you have ground truth &mdash; which is exactly why the calibration is worth building.</div>
+  </div>
+
+  <h3 class="sub-head">Judging whether a run is trustworthy</h3>
+  <div class="two-col">
+    <div class="calc">
+      <div class="title">Discard this result</div>
+<pre>Target reports  : p95 = 500 ms
+Generator CPU   : 98%
+Generator RAM   : 95%
+Network         : saturated
+
+The generator is itself queueing.
+The target may never have received
+the intended load. Any conclusion
+about the target is unfounded.</pre>
+    </div>
+    <div class="calc">
+      <div class="title">Trust this result</div>
+<pre>Target reports  : p95 = 500 ms
+Generator CPU   : 45%
+Generator RAM   : 50%
+Network         : 30%
+
+Ample headroom. Requests were issued
+on schedule. The measured latency is
+dominated by the target, not by the
+measuring device.</pre>
+    </div>
+  </div>
+
+  <div class="keybox">
+    <div class="label">A practical acceptance rule</div>
+    <p>Keep the generator below roughly <strong>70&ndash;80% on every resource</strong> &mdash; CPU, memory, and network. Record those figures in the test report alongside the latency numbers. A performance report that does not state the generator's own utilisation is incomplete, because the reader cannot judge whether the measurement is sound.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 30 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">30</span><h2>Network bandwidth</h2></div>
+
+  <div class="formula-box">
+    <span class="tag approx">Approximation</span>
+    <div class="eq">Bandwidth &asymp; RPS &times; (Request size + Response size)</div>
+    <div class="legend">An approximation: it ignores TCP/IP and TLS framing overhead, headers, retransmissions and handshake traffic. Real utilisation typically runs 5&ndash;15% above this for small payloads, where header overhead is proportionally large.</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Pocket Coach at 50 RPS</div>
+<pre>Request size   =  2 KB
+Response size  = 20 KB
+
+Per second = 50 × (2 + 20)
+           = 1,100 KB/s
+           = 1.07 MB/s
+           ≈ 9 Mbit/s</pre>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Bits versus bytes &mdash; a factor of eight</div>
+    <p>Network links are rated in <strong>bits</strong> per second; payloads are measured in <strong>bytes</strong>. Multiply by 8 to convert. A &ldquo;100 Mbps&rdquo; link carries at most 12.5 MB/s, and considerably less after protocol overhead. Confusing the two produces capacity estimates that are wrong by 8&times; &mdash; in the dangerous direction.</p>
+  </div>
+
+  <div class="calc">
+    <div class="title">When bandwidth becomes the ceiling</div>
+<pre>Target throughput = 1,000 RPS
+Response size     = 20 KB
+
+Required = 1,000 × 22 KB = 22,000 KB/s
+         ≈ 21.5 MB/s
+         ≈ 172 Mbit/s
+
+On a 100 Mbit/s link this is impossible.
+The generator would cap at roughly 580 RPS —
+and you would wrongly conclude the server
+could not exceed that.</pre>
+  </div>
+</section>
+
+<!-- ═══════════════ 31 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">31</span><h2>Timeouts</h2></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Timeout</th><th>Governs</th><th>If set too high</th><th>If set too low</th></tr></thead>
+    <tbody>
+      <tr><td>Connection</td><td>Establishing TCP/TLS</td><td>Threads block on dead hosts</td><td>Spurious failures under normal jitter</td></tr>
+      <tr><td>Read / socket</td><td>Waiting for response bytes</td><td>Resources held during outages</td><td>Slow-but-valid responses discarded</td></tr>
+      <tr><td>Client (total)</td><td>The whole request</td><td>Test appears to hang</td><td>Errors that the server would have answered</td></tr>
+      <tr><td>Server</td><td>How long the server will work</td><td>Workers occupied by hopeless requests</td><td>Legitimate long operations killed</td></tr>
+      <tr><td>Database</td><td>Query execution</td><td>Locks held, contention spreads</td><td>Heavy reports fail routinely</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">Timeouts convert latency into errors</div>
+    <p>Your measured error rate is partly a <em>configuration choice</em>. The same degraded system, tested with a 30-second client timeout, shows high latency and few errors; with a 2-second timeout it shows lower latency and many errors &mdash; because slow responses are discarded before they can be counted. <strong>Always state the timeout alongside the error rate</strong>, or the two numbers cannot be compared between runs.</p>
+  </div>
+
+  <div class="caveat">
+    <div class="label">The timeout ordering rule</div>
+    <p>Client timeout should exceed server timeout, which should exceed database timeout. When a client gives up first, the server keeps working on a request nobody will read &mdash; consuming capacity to produce nothing. Under load that wasted work compounds and accelerates collapse.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 32 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">32</span><h2>Retries and traffic amplification</h2></div>
+
+  <p>Retries are a reliability feature that becomes an attack on your own system precisely when it is already struggling.</p>
+
+  <div class="calc">
+    <div class="title">10% failure rate with automatic retry</div>
+<pre>Original requests           1,000
+10% fail → retried            100
+10% of those fail → retried    10
+and again                       1
+                            ─────
+Total requests              1,111
+
+Amplification: 11.1% more load than intended</pre>
+  </div>
+
+  <div class="formula-box">
+    <span class="tag exact">Exact</span>
+    <div class="eq">Total = N &divide; (1 &minus; p)</div>
+    <div class="legend"><strong>N</strong> &mdash; original requests &middot; <strong>p</strong> &mdash; failure probability. The sum of the geometric series of retry waves, assuming unlimited retries and a constant failure probability. Both assumptions are optimistic &mdash; real failure probability <em>rises</em> as the added load makes things worse.</div>
+  </div>
+
+  <div class="calc">
+    <div class="title">The same formula at 30% failure</div>
+<pre>Total = 1,000 / (1 − 0.30)
+      = 1,429 requests
+
+Amplification: 43% additional load —
+arriving exactly when the system is
+least able to absorb it.</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The retry death spiral</div>
+    <p>Load rises &rarr; failures rise &rarr; retries add load &rarr; failures rise further &rarr; more retries. Each turn of the loop makes the next worse. This is why a system can fall from &ldquo;slightly degraded&rdquo; to &ldquo;completely down&rdquo; in seconds. Mitigations are <strong>exponential backoff</strong>, <strong>jitter</strong>, <strong>retry budgets</strong> and <strong>circuit breakers</strong> &mdash; all of which are worth load-testing explicitly, because they only ever activate under exactly these conditions.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 33 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">33</span><h2>Open vs closed workload models</h2></div>
+
+  <p>This distinction determines what your test can and cannot discover. It is the single most consequential modelling choice available to you.</p>
+
+  <div class="two-col">
+    <div class="calc">
+      <div class="title">Closed model — fixed users</div>
+<pre>N virtual users loop forever.
+A user cannot start request k+1
+until request k has returned.
+
+λ = N / (R + Z)
+
+Server slows → λ falls automatically.
+The test applies BACK-PRESSURE.</pre>
+    </div>
+    <div class="calc">
+      <div class="title">Open model — fixed arrival rate</div>
+<pre>Requests start on a clock at
+rate λ, regardless of whether
+earlier ones have finished.
+
+λ = configured constant
+
+Server slows → concurrency grows.
+The test applies NO back-pressure.</pre>
+    </div>
+  </div>
+
+  <div class="calc">
+    <div class="title">Same degradation, two very different outcomes</div>
+<pre>Baseline: R = 0.2 s, Z = 1.8 s, N = 100 VUs → λ = 50 RPS
+
+Now the server degrades to R = 2.0 s:
+
+CLOSED:  λ = 100 / (2.0 + 1.8) = 26.3 RPS
+         Load DROPS by half. Queue stays bounded.
+         Reported latency ≈ 2 s.
+
+OPEN:    λ stays at 50 RPS by definition.
+         In-flight = 50 × 2.0 = 100 concurrent requests
+         (was 10). Queue grows. Latency keeps climbing.</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">Why this matters more than tool choice</div>
+    <p>A closed-model test <strong>protects the system from itself</strong>. When things slow down, the simulated users politely wait, so the queue never explodes and the test reports a survivable-looking result. Real customers do not wait &mdash; they arrive on their own schedule, like an open model. <strong>A closed-model test can report &ldquo;pass&rdquo; for a system that would collapse in production.</strong></p>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Coordinated omission</div>
+    <p>The closed-model artefact above has a name: <strong>coordinated omission</strong>. Because the load generator waits for a slow response before issuing the next request, it silently stops sampling during exactly the periods when the system is worst. The measured latency distribution therefore <em>under-represents the tail</em> &mdash; sometimes by an order of magnitude. It is a property of the workload model, not of any particular tool, and every major tool offers an arrival-rate mode that avoids it. Use one for capacity work.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 34 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">34</span><h2>Thresholds and error budgets</h2></div>
+
+  <div class="calc">
+    <div class="title">Turning an SLO into a pass/fail number</div>
+<pre>Requests in the test      = 100,000
+Allowed failure rate      = 1%
+
+Maximum allowed failures  = 100,000 × 0.01
+                          = 1,000 failures
+
+1,001 failures → the build fails.</pre>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Threshold</th><th>Example</th><th>What it protects</th></tr></thead>
+    <tbody>
+      <tr><td>Latency percentile</td><td><code>p95 &lt; 500 ms</code></td><td>The experience of almost every user</td></tr>
+      <tr><td>Tail latency</td><td><code>p99 &lt; 1 s</code></td><td>The unlucky minority; often the loudest complainers</td></tr>
+      <tr><td>Error rate</td><td><code>errors &lt; 1%</code></td><td>Correctness under load</td></tr>
+      <tr><td>Throughput floor</td><td><code>RPS &gt; 200</code></td><td>Catches saturation collapse (&sect;25)</td></tr>
+      <tr><td>Check success</td><td><code>checks &gt; 99%</code></td><td>Responses are valid, not merely 200 OK</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="keybox">
+    <div class="label">Include a throughput floor</div>
+    <p>Latency and error thresholds alone can be satisfied by a system that has quietly stopped doing work &mdash; serving very few requests, all of them quickly and successfully. A minimum-throughput threshold is what catches the breaking-point collapse where RPS <em>falls</em> as load rises.</p>
+  </div>
+
+  <div class="caveat">
+    <div class="label">SLA, SLO and SLI</div>
+    <p><strong>SLI</strong> is the measurement (observed p95). <strong>SLO</strong> is your internal target (p95 &lt; 500 ms). <strong>SLA</strong> is the contractual promise with consequences, and is normally set looser than the SLO so you have room to react. Load-test thresholds should be pinned to the <em>SLO</em>, not the SLA &mdash; you want the build to fail before the customer notices.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 35 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">35</span><h2>Reading a real result</h2></div>
+
+  <div class="calc">
+    <div class="title">The run to interpret</div>
+<pre>VUs             = 500
+Requests        = 100,000
+Throughput      = 333 RPS
+Average         = 450 ms
+p95             = 900 ms
+p99             = 1.8 s
+Failures        = 2,000
+App server CPU  = 92%
+App server RAM  = 78%
+Database CPU    = 95%</pre>
+  </div>
+
+  <h3 class="sub-head">First, derive what was not given</h3>
+  <div class="calc">
+    <div class="title">Derived figures</div>
+<pre>Duration      = 100,000 / 333            = 300 s (5 minutes)
+Error rate    = 2,000 / 100,000 × 100    = 2.0%
+In-flight     = 333 × 0.450              = 150 concurrent requests
+Implied think = 500/333 − 0.450          = 1.05 s per iteration</pre>
+  </div>
+
+  <div class="two-col">
+    <div class="calc">
+      <div class="title">What looks acceptable</div>
+<pre>• Throughput is substantial and steady
+• p95 at 900 ms may meet a 1 s SLO
+• RAM at 78% has headroom
+• Ratio p99/p95 = 2.0 — a normal,
+  not pathological, tail</pre>
+    </div>
+    <div class="calc">
+      <div class="title">What is alarming</div>
+<pre>• Database CPU 95% — effectively
+  saturated, no headroom at all
+• App CPU 92% — also near ceiling
+• Error rate 2% = 2,000 real failures
+• p99 is 4× the average — the tail
+  is already stretching</pre>
+    </div>
+  </div>
+
+  <div class="keybox">
+    <div class="label">Where the bottleneck most likely is</div>
+    <p><strong>The database.</strong> It is the most saturated resource at 95%, and application CPU at 92% may partly reflect threads spinning while waiting on database work. Per &sect;24, both tiers are deep in the region where a small load increase produces a large latency increase &mdash; which is consistent with the stretched p99.</p>
+  </div>
+
+  <h3 class="sub-head">Evidence still required before concluding</h3>
+  <ul>
+    <li><strong>What are the 2,000 failures?</strong> 500s mean defects; 504s mean saturation; 429s mean rate limiting worked. The status breakdown changes the conclusion entirely.</li>
+    <li><strong>Were failures spread evenly or clustered?</strong> A burst at one moment suggests a transient event; a rising rate suggests progressive saturation.</li>
+    <li><strong>What was the load generator doing?</strong> Without its CPU and network figures, we cannot rule out that we measured the generator (&sect;29).</li>
+    <li><strong>Connection-pool wait time.</strong> This distinguishes &ldquo;the database is slow&rdquo; from &ldquo;we cannot get a connection to the database&rdquo;.</li>
+    <li><strong>Was this steady state?</strong> Averages spanning the ramp understate the peak (&sect;13).</li>
+    <li><strong>Which endpoints failed?</strong> A single bad endpoint is a different problem from uniform degradation.</li>
+  </ul>
+
+  <div class="caveat">
+    <div class="label">Can we declare the system ready for 500 users? No.</div>
+    <p>Not because the numbers are bad, but because <strong>there is no headroom left</strong>. At 95% database CPU the system is at its ceiling with zero margin for traffic growth, a slow query, a failed cache, or a retry storm. The honest statement is: <em>&ldquo;The system serves this load today at 2% errors, with no spare capacity. Any increase, or the loss of the cache, will cause failures.&rdquo;</em> Capacity means meeting the SLA <strong>with margin</strong> &mdash; see &sect;36.</p>
+  </div>
+</section>
+<div class="part-divider"><span class="n">PART V</span><h2>Reference</h2></div>
+
+<!-- ═══════════════ 36 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">36</span><h2>Complete end-to-end worked example</h2></div>
+
+  <p>Every calculation for Pocket Coach, from the manager's sentence to a capacity verdict. Each step feeds the next.</p>
+
+  <h3 class="sub-head">Step 1 &mdash; From population to throughput</h3>
+  <div class="calc">
+    <div class="title">Given</div>
+<pre>Registered users            = 5,000
+Peak concurrent users       =   500
+Requests per user per minute =    6</pre>
+  </div>
+  <div class="calc">
+    <div class="title">Derive the load</div>
+<pre>Requests per minute = 500 × 6      = 3,000
+Requests per second = 3,000 / 60   = 50 RPS
+
+Time between one user's requests = 60 / 6 = 10 s</pre>
+  </div>
+
+  <h3 class="sub-head">Step 2 &mdash; Think time and concurrency</h3>
+  <div class="calc">
+    <div class="title">Little's Law, both forms</div>
+<pre>Response time  R = 0.2 s
+Think time     Z = 10 − 0.2 = 9.8 s
+
+Requests in flight:  L = λ × R
+                       = 50 × 0.2      = 10 requests
+
+Check the user count: N = λ × (R + Z)
+                        = 50 × 10.0    = 500 users  ✓</pre>
+  </div>
+  <div class="keybox">
+    <div class="label">Two routes, one answer</div>
+    <p>500 concurrent users generate 50 RPS and hold only <strong>10 requests in flight</strong>. Each user is in the system 2% of the time. Sizing for 500 simultaneous requests would over-provision by 50&times;.</p>
+  </div>
+
+  <h3 class="sub-head">Step 3 &mdash; Test configuration</h3>
+  <div class="calc">
+    <div class="title">What to type into the tool</div>
+<pre>Model            arrival rate (open) — avoids coordinated omission
+Rate             50 requests/second
+Duration         30 minutes steady state
+Ramp-up          5 minutes  (50 / 300 = 0.167 RPS added per second)
+Scenario         4-request journey
+Think time       distributed around 9.8 s
+
+Total requests = 50 × 1,800 = 90,000 (steady state only)</pre>
+  </div>
+
+  <h3 class="sub-head">Step 4 &mdash; Traffic generated</h3>
+  <div class="calc">
+    <div class="title">Bandwidth</div>
+<pre>Request 2 KB, response 20 KB
+
+50 × (2 + 20) = 1,100 KB/s
+              ≈ 1.07 MB/s
+              ≈ 9 Mbit/s          (approximation — see §30)</pre>
+  </div>
+
+  <h3 class="sub-head">Step 5 &mdash; What the tiers receive</h3>
+  <div class="calc">
+    <div class="title">Database and cache</div>
+<pre>Queries per request  = 3
+Query rate           = 50 × 3            = 150 queries/s
+
+With 90% cache hit ratio:
+Reaching PostgreSQL  = 150 × (1 − 0.90)  = 15 queries/s
+
+Connections needed (query = 10 ms):
+                     = 150 × 0.010       = 1.5 connections
+If the query degrades to 100 ms:
+                     = 150 × 0.100       = 15 connections</pre>
+  </div>
+
+  <div class="calc">
+    <div class="title">CPU (service demand D = 0.040 s, measured)</div>
+<pre>Cores busy   = 50 × 0.040        = 2.0 of 16 cores
+Utilisation  = 2.0 / 16 × 100    = 12.5%
+
+CPU ceiling  = 16 / 0.040        = 400 RPS
+Safe at 70%  = (16 × 0.70)/0.040 = 280 RPS</pre>
+  </div>
+
+  <div class="calc">
+    <div class="title">Memory</div>
+<pre>32 GB total −  OS 4  −  app 10  −  DB 8  −  Redis 4
+             = 6 GB headroom</pre>
+  </div>
+
+  <h3 class="sub-head">Step 6 &mdash; Thresholds</h3>
+  <div class="calc">
+    <div class="title">Pass/fail criteria</div>
+<pre>p95 < 500 ms
+p99 < 1,000 ms
+error rate < 1%   →  90,000 × 0.01 = 900 failures allowed
+throughput > 45 RPS  (catches saturation collapse)</pre>
+  </div>
+
+  <h3 class="sub-head">Step 7 &mdash; Capacity verdict with headroom</h3>
+  <div class="calc">
+    <div class="title">Design for growth, not for today</div>
+<pre>Today's peak                 =  50 RPS
+Safety factor                =  2×  (growth, spikes, cache loss)
+Design target                = 100 RPS
+
+CPU needed at 70% utilisation:
+  cores = (100 × 0.040) / 0.70   = 5.7 cores
+
+Available: 16 cores → comfortable.
+CPU is NOT the binding constraint at this load.</pre>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The verdict</div>
+    <p>Pocket Coach's application tier has substantial CPU margin &mdash; 12.5% utilisation at peak, with a theoretical ceiling around 400 RPS. <strong>The risks are elsewhere:</strong> the database at 15 queries/second is fine <em>only while the cache holds</em>. Lose Redis and database load steps to 150 queries/second instantly (&sect;23). The connection pool must be sized for degraded query times, not healthy ones (&sect;22). Those two scenarios &mdash; cache failure and slow queries &mdash; are what this system should be tested against, not raw user count.</p>
+  </div>
+
+  <div class="caveat">
+    <div class="label">Which of these numbers are real?</div>
+    <p>Only <strong>D = 0.040 s</strong> and <strong>R = 0.2 s</strong> would come from measurement; everything else is derived from them by arithmetic. The whole model is therefore only as good as those two measurements. <strong>Measure them first, on the real system, before trusting any conclusion built on top.</strong></p>
+  </div>
+</section>
+
+<!-- ═══════════════ 37 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">37</span><h2>Mathematical accuracy rules</h2></div>
+
+  <p>Every quantity in a performance report belongs to one of four categories. Labelling them is what separates an engineering document from a guess.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Category</th><th>Meaning</th><th>Example from this document</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Exact</strong></td><td>Follows by definition or proven theorem</td><td><code>RPS = requests / seconds</code>; Little's Law in steady state</td></tr>
+      <tr><td><strong>Approximation</strong></td><td>Ignores real effects for tractability</td><td>Bandwidth &asymp; RPS &times; payload (ignores framing)</td></tr>
+      <tr><td><strong>Assumption</strong></td><td>A chosen input that could be otherwise</td><td>3 queries per request; 90% cache hit ratio</td></tr>
+      <tr><td><strong>Measurement</strong></td><td>Observed in a specific environment</td><td>Service demand <em>D</em>; response time <em>R</em>; generator overhead &epsilon;</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="caveat">
+    <div class="label">Claims to refuse</div>
+    <ul style="margin:.3rem 0 0">
+      <li><strong>&ldquo;Tool X adds <em>n</em> ms to every request.&rdquo;</strong> Generator overhead varies with concurrency, payload, TLS, connection reuse, logging and CPU headroom. It must be measured per environment (&sect;29).</li>
+      <li><strong>&ldquo;Concurrency = RPS &times; response time&rdquo; as a universal law.</strong> True as Little's Law only in <em>steady state</em>. During a spike, or while a queue grows without bound, it does not describe the system.</li>
+      <li><strong>&ldquo;We support N users&rdquo; without stating think time.</strong> &sect;15 shows the same 100 VUs spanning 10&ndash;500 RPS. A VU count alone is not a load specification.</li>
+      <li><strong>&ldquo;Average response time is X.&rdquo;</strong> &sect;11 shows an average that describes none of the 100 users measured. Report percentiles.</li>
+      <li><strong>Averaged percentiles.</strong> p95 values cannot be averaged across machines or time buckets. Recompute from samples.</li>
+      <li><strong>&ldquo;16 cores at 75% = 12 cores of capacity&rdquo; taken literally.</strong> Ignores serial sections, hyper-threading and the non-linear latency cost of high utilisation.</li>
+    </ul>
+  </div>
+
+  <div class="keybox">
+    <div class="label">The internal-consistency check</div>
+    <p>Before publishing any table of load figures, verify that each row satisfies <code>N = &lambda; &times; (R + Z)</code> with a <em>consistent</em> think time. A row implying a negative think time is physically impossible and reveals invented numbers. This check takes seconds and catches a surprising number of published benchmarks.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 38 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">38</span><h2>Formula cheat sheet</h2></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Quantity</th><th>Formula</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Throughput</td><td class="mono">RPS = Total Requests / Total Seconds</td><td class="good">Exact</td></tr>
+      <tr><td>Total requests (open)</td><td class="mono">Requests = Arrival Rate &times; Duration</td><td class="good">Exact</td></tr>
+      <tr><td>Total requests (closed)</td><td class="mono">Requests = Users &times; Iterations &times; Requests per iteration</td><td class="good">Exact</td></tr>
+      <tr><td>Total iterations</td><td class="mono">Iterations = Users &times; Iterations per user</td><td class="good">Exact</td></tr>
+      <tr><td>Little's Law</td><td class="mono">L = &lambda; &times; W</td><td class="good">Exact (steady state)</td></tr>
+      <tr><td>Concurrency of requests</td><td class="mono">In-flight = RPS &times; Response Time</td><td class="good">Exact (steady state)</td></tr>
+      <tr><td>Closed-model users</td><td class="mono">N = &lambda; &times; (R + Z)</td><td class="good">Exact (steady state)</td></tr>
+      <tr><td>Throughput from users</td><td class="mono">&lambda; = N / (R + Z)</td><td class="good">Exact (steady state)</td></tr>
+      <tr><td>Utilization Law</td><td class="mono">U = X &times; D</td><td class="good">Exact</td></tr>
+      <tr><td>CPU ceiling</td><td class="mono">Max RPS = Cores / D</td><td class="warncell">Approx (perfect parallelism)</td></tr>
+      <tr><td>Safe throughput</td><td class="mono">Safe RPS = (Cores &times; 0.70) / D</td><td class="warncell">Approx (target utilisation)</td></tr>
+      <tr><td>Error rate</td><td class="mono">Errors % = Failed / Total &times; 100</td><td class="good">Exact</td></tr>
+      <tr><td>Success rate</td><td class="mono">Success % = Successful / Total &times; 100</td><td class="good">Exact</td></tr>
+      <tr><td>Allowed failures</td><td class="mono">Max Failures = Total &times; Allowed Rate</td><td class="good">Exact</td></tr>
+      <tr><td>Database query rate</td><td class="mono">QPS = RPS &times; Queries per Request</td><td class="good">Exact (fixed ratio)</td></tr>
+      <tr><td>Queries after cache</td><td class="mono">QPS = RPS &times; Q &times; (1 &minus; Hit Ratio)</td><td class="good">Exact (fixed ratio)</td></tr>
+      <tr><td>Cache hit ratio</td><td class="mono">Hit % = Hits / Total &times; 100</td><td class="good">Exact</td></tr>
+      <tr><td>Connections in use</td><td class="mono">Connections = QPS &times; Query Duration</td><td class="good">Exact (Little's Law)</td></tr>
+      <tr><td>Bandwidth</td><td class="mono">Bytes/s &asymp; RPS &times; (Req Size + Resp Size)</td><td class="warncell">Approx (ignores framing)</td></tr>
+      <tr><td>Bits from bytes</td><td class="mono">bits = bytes &times; 8</td><td class="good">Exact</td></tr>
+      <tr><td>Queue growth</td><td class="mono">Backlog/s = Arrival Rate &minus; Service Rate</td><td class="good">Exact</td></tr>
+      <tr><td>Queue wait</td><td class="mono">Wait = Queue Length / Service Rate</td><td class="good">Exact (FIFO)</td></tr>
+      <tr><td>Retry amplification</td><td class="mono">Total = N / (1 &minus; p)</td><td class="warncell">Approx (constant p, unlimited retries)</td></tr>
+      <tr><td>Ramp rate</td><td class="mono">Users/s = VUs / Ramp Seconds</td><td class="good">Exact (linear ramp)</td></tr>
+      <tr><td>Generator overhead</td><td class="mono">&epsilon; = Reported &minus; Known True Latency</td><td class="good">Exact (known target)</td></tr>
+      <tr><td>Generators needed</td><td class="mono">Machines = Target RPS / (Per-machine &times; 0.70)</td><td class="warncell">Approx (headroom)</td></tr>
+      <tr><td>Soak volume</td><td class="mono">Requests = RPS &times; 3600 &times; Hours</td><td class="good">Exact</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════════════ 39 ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">39</span><h2>Terminology glossary</h2></div>
+
+  <div class="tw"><table>
+    <thead><tr><th style="width:9rem">Term</th><th>Definition, analogy and example</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Virtual User (VU)</strong></td><td>A simulated worker performing one action at a time, then repeating. <em>Analogy:</em> one shopper walking the aisles. <em>Example:</em> 100 VUs at R = 0.2 s, Z = 1.8 s produce 50 RPS.</td></tr>
+      <tr><td><strong>Concurrent user</strong></td><td>A real person with a live session at a given instant. <em>Analogy:</em> people currently inside the shop. <em>Example:</em> 500 concurrent users generating only 10 simultaneous requests.</td></tr>
+      <tr><td><strong>Active user</strong></td><td>Someone who used the system within a period, typically a day. Larger than concurrent, smaller than registered.</td></tr>
+      <tr><td><strong>Registered user</strong></td><td>A row in the users table. Carries no load information whatsoever.</td></tr>
+      <tr><td><strong>Throughput</strong></td><td>Work completed per unit time. <em>Analogy:</em> customers served per hour. <em>Example:</em> 12,000 requests / 600 s = 20 RPS.</td></tr>
+      <tr><td><strong>RPS</strong></td><td>Requests per second &mdash; HTTP calls completed each second.</td></tr>
+      <tr><td><strong>TPS</strong></td><td>Transactions per second &mdash; business actions. One transaction may be several requests: 20 TPS &times; 4 = 80 RPS.</td></tr>
+      <tr><td><strong>Latency</strong></td><td>Strictly, network round-trip time. Loosely used for response time &mdash; always disambiguate. <em>Example:</em> 40 ms RTT inside a 200 ms response.</td></tr>
+      <tr><td><strong>Response time</strong></td><td>Client-observed elapsed time from first byte sent to last byte received. Includes network, queueing and server work.</td></tr>
+      <tr><td><strong>TTFB</strong></td><td>Time to first byte &mdash; response time minus the body transfer.</td></tr>
+      <tr><td><strong>p50 / median</strong></td><td>Half of requests were faster. <em>Analogy:</em> the middle person in a queue by wait time.</td></tr>
+      <tr><td><strong>p90 / p95 / p99</strong></td><td>90 / 95 / 99 per cent of requests were faster. <em>Example:</em> p99 = 3.1 s means 1 in 100 users waited over 3 seconds.</td></tr>
+      <tr><td><strong>Error rate</strong></td><td>Failed &divide; total &times; 100. <em>Example:</em> 500 / 10,000 = 5%.</td></tr>
+      <tr><td><strong>Arrival rate</strong></td><td>Rate at which new requests or users enter, independent of completions. <em>Analogy:</em> people arriving at a door, whether or not there is room.</td></tr>
+      <tr><td><strong>Iteration</strong></td><td>One complete pass of a VU through the scenario. <em>Analogy:</em> one lap of the shop.</td></tr>
+      <tr><td><strong>Think time</strong></td><td>Simulated pause between actions. <em>Example:</em> 9.8 s between requests for a user acting 6 times per minute.</td></tr>
+      <tr><td><strong>Ramp-up</strong></td><td>Gradual increase to target load. <em>Example:</em> 100 VUs over 300 s = 0.333 VUs/second.</td></tr>
+      <tr><td><strong>Ramp-down</strong></td><td>Gradual decrease at the end, allowing in-flight work to finish cleanly.</td></tr>
+      <tr><td><strong>Load test</strong></td><td>Expected traffic held steady; verifies the SLA is met.</td></tr>
+      <tr><td><strong>Stress test</strong></td><td>Load increased past expectation to find the breaking point.</td></tr>
+      <tr><td><strong>Spike test</strong></td><td>Sudden multiplication of load; tests survival and recovery.</td></tr>
+      <tr><td><strong>Soak / endurance test</strong></td><td>Moderate load for hours. <em>Example:</em> 10 RPS for 8 hours = 288,000 requests. Finds leaks.</td></tr>
+      <tr><td><strong>Smoke test</strong></td><td>Minimal load confirming the test itself is correctly configured.</td></tr>
+      <tr><td><strong>Capacity</strong></td><td>Maximum load still meeting the SLA, <em>with headroom</em>. Not the same as maximum achievable throughput.</td></tr>
+      <tr><td><strong>Bottleneck</strong></td><td>The resource that saturates first. <em>Analogy:</em> the narrowest point of a funnel &mdash; widening anything else changes nothing.</td></tr>
+      <tr><td><strong>Saturation</strong></td><td>A resource fully consumed, so work must queue.</td></tr>
+      <tr><td><strong>Queue</strong></td><td>Work waiting for a busy resource. Grows without bound while arrivals exceed service.</td></tr>
+      <tr><td><strong>Connection pool</strong></td><td>Reusable set of database connections. <em>Example:</em> 300 QPS &times; 10 ms = 3 in use; at 100 ms, 30 in use &mdash; exhausting a pool of 20.</td></tr>
+      <tr><td><strong>Cache hit / miss</strong></td><td>Whether data was served from cache. <em>Example:</em> 900 / 1,000 = 90% hit ratio, cutting database load tenfold.</td></tr>
+      <tr><td><strong>CPU utilisation</strong></td><td>Fraction of time the processor is busy. Above ~80%, queueing makes latency rise sharply.</td></tr>
+      <tr><td><strong>Service demand (D)</strong></td><td>CPU-seconds consumed per request. <em>Example:</em> D = 0.04 s means 16 cores can theoretically serve 400 RPS.</td></tr>
+      <tr><td><strong>Memory utilisation</strong></td><td>Fraction of RAM in use. Pressure appears as garbage collection and cache eviction before it appears as an error.</td></tr>
+      <tr><td><strong>Network throughput</strong></td><td>Bytes per second across the link. Rated in bits &mdash; multiply bytes by 8.</td></tr>
+      <tr><td><strong>Timeout</strong></td><td>How long a party waits before abandoning a request. Converts latency into errors, so it shapes your error rate.</td></tr>
+      <tr><td><strong>Retry</strong></td><td>Re-sending a failed request. <em>Example:</em> at 10% failure, total load = N / (1 &minus; 0.1) = 1.11 N.</td></tr>
+      <tr><td><strong>Load generator</strong></td><td>The machine producing the load. Subject to the same limits as the system under test.</td></tr>
+      <tr><td><strong>Distributed testing</strong></td><td>Several coordinated generators. <em>Example:</em> 10,000 RPS at 1,400 usable per machine = 8 machines.</td></tr>
+      <tr><td><strong>Threshold</strong></td><td>A pass/fail rule evaluated against a metric, e.g. <code>p95 &lt; 500 ms</code>.</td></tr>
+      <tr><td><strong>SLI</strong></td><td>Service Level Indicator &mdash; the measurement itself.</td></tr>
+      <tr><td><strong>SLO</strong></td><td>Service Level Objective &mdash; your internal target for that indicator.</td></tr>
+      <tr><td><strong>SLA</strong></td><td>Service Level Agreement &mdash; the contractual promise, with consequences. Normally looser than the SLO.</td></tr>
+      <tr><td><strong>Baseline</strong></td><td>A recorded reference result used to detect change over time.</td></tr>
+      <tr><td><strong>Regression</strong></td><td>Measurable degradation against the baseline &mdash; the main reason to run load tests continuously.</td></tr>
+      <tr><td><strong>Closed workload</strong></td><td>Fixed user population; a user waits for a response before continuing. Applies back-pressure and hides tail latency.</td></tr>
+      <tr><td><strong>Open workload</strong></td><td>Requests arrive at a set rate regardless of completions. Models real customers; exposes queue growth.</td></tr>
+      <tr><td><strong>Coordinated omission</strong></td><td>Under-sampling exactly when the system is slowest, because the generator waits for responses. Under-reports tail latency; avoided with an arrival-rate model.</td></tr>
+      <tr><td><strong>Headroom</strong></td><td>Deliberate unused capacity absorbing growth, spikes and failure. Capacity without headroom is not capacity.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════════════ CLOSING ═══════════════ -->
+<section>
+  <div class="sec-head"><span class="num">&mdash;</span><h2>The answer to the central question</h2></div>
+
+  <p><em>&ldquo;I configure a load test in a tool &mdash; what exactly happens from that moment until the final graph and numbers appear on my screen?&rdquo;</em></p>
+
+  <div class="chain">
+    <div class="step"><div class="who">You</div><div class="what">Convert a population (&ldquo;500 users&rdquo;) into quantities a machine can generate: rate, duration, think time, thresholds. <strong>Most bad load tests fail here.</strong></div></div>
+    <div class="step"><div class="who">Tool</div><div class="what">Turns that configuration into a schedule and allocates workers. The workload model chosen here &mdash; open or closed &mdash; determines what the test is capable of discovering.</div></div>
+    <div class="step"><div class="who">Machine</div><div class="what">Spends real CPU on TLS, serialisation and metrics; consumes sockets and file descriptors. Any shortage here is silently attributed to your server.</div></div>
+    <div class="step"><div class="who">Network</div><div class="what">Carries bytes, adding propagation delay and a bandwidth ceiling that can cap throughput before the server is touched.</div></div>
+    <div class="step"><div class="who">Server</div><div class="what">Queues, then processes. Queue time is invisible to server-side metrics but fully visible to your users.</div></div>
+    <div class="step"><div class="who">Data tier</div><div class="what">Cache decides how much reaches the database. The connection pool, sized by Little's Law, becomes the ceiling as queries slow.</div></div>
+    <div class="step"><div class="who">Return</div><div class="what">The tool stops its clock. The figure it records spans everything above &mdash; not just your application.</div></div>
+    <div class="step"><div class="who">Metrics</div><div class="what">Counts and rates are exact; percentiles are often approximate by construction, and can never be averaged.</div></div>
+    <div class="step"><div class="who">You</div><div class="what">Decide. Every distortion in the chain is now inside your number &mdash; which is why the generator's own utilisation belongs in the report beside the result.</div></div>
+  </div>
+
+  <div class="keybox">
+    <div class="label">If you remember four things</div>
+    <ol class="body" style="margin-bottom:0">
+      <li><strong>Users are not requests.</strong> 500 concurrent users produced 50 RPS and 10 in-flight requests. State think time or state throughput &mdash; a VU count alone means nothing.</li>
+      <li><strong>The average describes nobody.</strong> Report p95 and p99, and never average percentiles together.</li>
+      <li><strong>Measure the measuring device.</strong> A saturated load generator invalidates the result; publish its utilisation alongside the numbers.</li>
+      <li><strong>Capacity includes headroom.</strong> A system at 95% CPU with a 2% error rate is not &ldquo;at capacity&rdquo; &mdash; it is already past it.</li>
+    </ol>
+  </div>
+</section>
+
+</div>

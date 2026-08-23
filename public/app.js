@@ -161,8 +161,11 @@
     $('requestEmpty').style.display = rows.length ? 'none' : 'block';
     $('reqCount').textContent = rows.length;
     const selected = rows.filter((r) => r.enabled !== false).length;
+    // Weight is only consulted by the random flow; sequence runs each request once.
+    const weightApplies = state.profile.flow === 'random';
     $('reqSummary').textContent = rows.length
-      ? selected + ' of ' + rows.length + ' selected' + (state.collectionName ? ' from ' + state.collectionName : '')
+      ? selected + ' of ' + rows.length + ' selected' + (state.collectionName ? ' from ' + state.collectionName : '') +
+        (weightApplies ? '' : ' · weight ignored in Sequence flow')
       : 'nothing loaded yet';
     $('selectedCount').textContent = selected;
 
@@ -177,7 +180,8 @@
           escapeHtml(req.name) + '</td>' +
         '<td class="truncate mono muted" style="max-width:340px" title="' + escapeAttr(req.url) + '">' + escapeHtml(req.url) + '</td>' +
         '<td><input type="text" data-act="expect" data-i="' + index + '" value="' + escapeAttr(req.expectStatus || '2xx') + '" /></td>' +
-        '<td class="num"><input type="number" min="1" data-act="weight" data-i="' + index + '" value="' + (req.weight || 1) + '" /></td>' +
+        '<td class="num"><input type="number" min="1" data-act="weight" data-i="' + index + '" value="' + (req.weight || 1) + '"' +
+          (weightApplies ? '' : ' disabled title="Weight only applies to the Random flow. In Sequence flow every request runs once per iteration."') + ' /></td>' +
         '<td class="num"><input type="number" min="0" placeholder="-" data-act="p95" data-i="' + index + '" value="' + (req.p95 == null ? '' : req.p95) + '" /></td>' +
         '<td><button class="btn sm ghost" data-act="detail" data-i="' + index + '">' + (state.expanded[index] ? 'Hide' : 'Info') + '</button></td>';
       body.appendChild(tr);
@@ -649,6 +653,7 @@
       if (event.target.closest('#stageList') || event.target.closest('#presetRow')) return;
       formToProfile();
       if (event.target.id === 'pExecutor') syncExecutorFields();
+      if (event.target.id === 'pFlow') renderRequests();
       renderRamp();
       save();
     });
