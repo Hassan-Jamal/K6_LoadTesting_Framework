@@ -11,5 +11,9 @@ public/vendor/
 .DS_Store
 benchmarks/results/jmeter-native-dashboard/
 
-# Evidence images: kept locally, not published
+# Presentation material and evidence: kept locally, never published
 benchmarks/screenshots/
+benchmarks/results/
+benchmarks/*.pdf
+benchmarks/*.html
+benchmarks/render-*.js
