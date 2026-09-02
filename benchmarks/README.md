@@ -59,6 +59,23 @@ Both load profiles are matched: ramp 0 → 1,000 over 30s, hold 60s, one GET plu
 | `test.jmeter.jmx` | JMeter plan: 1,000 threads, matched ramp, no listeners |
 | `measure.ps1` | Samples RSS / threads / CPU of a process every 500 ms |
 | `results/` | Raw measurements from the run in the table above |
+| `screenshots/` | Each tool's own dashboard, captured during the run |
+| `render-pdf.js`, `render-deck.js` | Regenerate the documents below from their HTML |
+
+## Documents
+
+| File | What it is |
+| --- | --- |
+| `FINAL-k6-vs-JMeter.pdf` | The presentation — 19 slides in plain wording, with both tools' own dashboard screenshots and the measured readings. |
+| `Load_Testing_Mathematics_and_Engineering.pdf` | A 44-page reference following a load test from the tester's configuration through the tool, operating system, network, server and database, and back to the metrics. Every formula is labelled exact, approximation, assumption or measurement. |
+
+Each PDF keeps its `.html` source beside it. Edit the HTML, then re-render:
+
+```bash
+node render-deck.js FINAL-k6-vs-JMeter.html FINAL-k6-vs-JMeter.pdf "k6 or JMeter"
+node render-pdf.js  Load_Testing_Mathematics_and_Engineering.html \
+                    Load_Testing_Mathematics_and_Engineering.pdf "Load Testing Mathematics"
+```
 
 ## Read the caveats before quoting this
 
