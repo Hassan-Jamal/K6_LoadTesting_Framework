@@ -10,3 +10,6 @@ public/vendor/
 *.log
 .DS_Store
 benchmarks/results/jmeter-native-dashboard/
+
+# Evidence images: kept locally, not published
+benchmarks/screenshots/

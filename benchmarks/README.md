@@ -59,7 +59,7 @@ Both load profiles are matched: ramp 0 → 1,000 over 30s, hold 60s, one GET plu
 | `test.jmeter.jmx` | JMeter plan: 1,000 threads, matched ramp, no listeners |
 | `measure.ps1` | Samples RSS / threads / CPU of a process every 500 ms |
 | `results/` | Raw measurements from the run in the table above |
-| `screenshots/` | Each tool's own dashboard, captured during the run |
+| `screenshots/` | Each tool's own dashboard, captured during the run. Kept locally only — the images are embedded in the deck below, so nothing here depends on them. |
 | `render-pdf.js`, `render-deck.js` | Regenerate the documents below from their HTML |
 
 ## Documents
