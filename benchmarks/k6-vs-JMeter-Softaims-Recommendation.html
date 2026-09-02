@@ -1,0 +1,902 @@
+<title>k6 vs JMeter for Softaims</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* A deliberately single-theme deck: designed to be projected, so the dark
+     ground is a choice rather than an omission. Every colour is explicit. */
+  :root {
+    --ground:   #0A0E15;
+    --surface:  #141B26;
+    --surface2: #1C2532;
+    --ink:      #EFF4FA;
+    --ink-soft: #A4B3C4;
+    --ink-dim:  #6E7E90;
+    --rule:     #26313F;
+
+    --k6:       #4CA6FF;
+    --k6-dim:   rgba(76, 166, 255, .16);
+    --jm:       #FF9F45;
+    --jm-dim:   rgba(255, 159, 69, .16);
+    --win:      #4ADE80;
+    --gold:     #E8C468;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; background: var(--ground); }
+
+  body {
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- slide frame: 16:9 ---------- */
+  .slide {
+    width: 13.333in;
+    height: 7.5in;
+    padding: 0.62in 0.8in 0.55in;
+    background: var(--ground);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+    margin: 0 auto 8px;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+
+  .slide::after {
+    content: attr(data-n);
+    position: absolute; right: 0.8in; bottom: 0.36in;
+    font-family: "IBM Plex Mono", monospace; font-size: 9.5pt; color: var(--ink-dim);
+  }
+  .slide::before {
+    content: "k6 vs JMeter · Softaims";
+    position: absolute; left: 0.8in; bottom: 0.36in;
+    font-family: "IBM Plex Mono", monospace; font-size: 9.5pt; color: var(--ink-dim);
+    letter-spacing: .04em;
+  }
+
+  /* ---------- typography ---------- */
+  h1, h2, h3 { font-family: Manrope, system-ui, sans-serif; margin: 0; }
+  h1 { font-size: 46pt; font-weight: 800; line-height: 1.02; letter-spacing: -0.025em; }
+  h2 { font-size: 27pt; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; }
+  h3 { font-size: 14pt; font-weight: 600; letter-spacing: -0.01em; }
+  p  { margin: 0; font-size: 12.5pt; line-height: 1.5; color: var(--ink-soft); }
+  .lead { font-size: 15pt; color: var(--ink-soft); line-height: 1.45; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 9.5pt; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--k6); margin-bottom: .5rem;
+  }
+  .slide-head { border-bottom: 1px solid var(--rule); padding-bottom: .5rem; margin-bottom: 1.1rem; }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+  .k6c { color: var(--k6); } .jmc { color: var(--jm); } .winc { color: var(--win); }
+
+  .body-area { flex: 1; display: flex; flex-direction: column; gap: .9rem; min-height: 0; }
+
+  /* ---------- components ---------- */
+  .cols { display: grid; gap: 1rem; }
+  .c2 { grid-template-columns: 1fr 1fr; }
+  .c3 { grid-template-columns: repeat(3, 1fr); }
+  .c2-wide { grid-template-columns: 1.25fr 1fr; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: .45rem;
+  }
+  .card.k6 { border-top: 3px solid var(--k6); }
+  .card.jm { border-top: 3px solid var(--jm); }
+  .card h3 { font-size: 13pt; }
+  .card p { font-size: 11.5pt; }
+
+  .stat { display: flex; flex-direction: column; gap: .2rem; }
+  .stat .num { font-family: Manrope, sans-serif; font-size: 34pt; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+  .stat .lab { font-family: "IBM Plex Mono", monospace; font-size: 9pt; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); }
+  .stat .sub { font-size: 10.5pt; color: var(--ink-soft); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11.5pt; }
+  th, td { text-align: left; padding: .42rem .7rem; border-bottom: 1px solid var(--rule); }
+  thead th {
+    font-family: "IBM Plex Mono", monospace; font-size: 8.5pt; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-dim); font-weight: 500;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+  .tbl-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .3rem .5rem; }
+
+  pre {
+    margin: 0; background: var(--surface2); border: 1px solid var(--rule); border-radius: 5px;
+    padding: .8rem 1rem; font-family: "IBM Plex Mono", monospace; font-size: 10.5pt;
+    line-height: 1.55; color: var(--ink); overflow: hidden;
+  }
+  code { font-family: "IBM Plex Mono", monospace; background: var(--surface2); padding: .05rem .3rem; border-radius: 3px; font-size: .95em; }
+
+  .callout {
+    background: var(--surface); border-left: 3px solid var(--gold); border-radius: 4px;
+    padding: .85rem 1.1rem;
+  }
+  .callout.k6b { border-left-color: var(--k6); }
+  .callout .lab {
+    font-family: "IBM Plex Mono", monospace; font-size: 8.5pt; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: .3rem;
+  }
+  .callout.k6b .lab { color: var(--k6); }
+  .callout p { font-size: 11.5pt; }
+
+  ul { margin: 0; padding-left: 1.1rem; }
+  li { font-size: 12pt; color: var(--ink-soft); margin-bottom: .3rem; line-height: 1.45; }
+  li strong { color: var(--ink); font-weight: 600; }
+
+  /* comparison bar */
+  .bar-row { display: grid; grid-template-columns: 8.5rem 1fr 5rem; gap: .8rem; align-items: center; margin-bottom: .55rem; }
+  .bar-row .name { font-size: 11pt; color: var(--ink-soft); }
+  .bar-track { height: 22px; background: var(--surface2); border-radius: 3px; overflow: hidden; display: flex; }
+  .bar-fill { height: 100%; }
+  .bar-row .val { font-family: "IBM Plex Mono", monospace; font-size: 11pt; text-align: right; }
+
+  .pill {
+    display: inline-block; align-self: flex-start; font-family: "IBM Plex Mono", monospace; font-size: 8.5pt;
+    letter-spacing: .08em; text-transform: uppercase; padding: .12rem .5rem;
+    border-radius: 3px; font-weight: 600;
+  }
+  .pill.k6 { background: var(--k6-dim); color: var(--k6); }
+  .pill.jm { background: var(--jm-dim); color: var(--jm); }
+  .pill.win { background: rgba(74,222,128,.16); color: var(--win); }
+
+  @page { size: 13.333in 7.5in; margin: 0; }
+  @media print {
+    body { background: var(--ground); }
+    .slide { margin: 0; box-shadow: none; }
+  }
+</style>
+
+<!-- ═══════════ 1 · TITLE ═══════════ -->
+<div class="slide" data-n="01" style="justify-content:center">
+  <div class="eyebrow">Performance Engineering &middot; Tooling Recommendation</div>
+  <h1>k6 <span style="color:var(--ink-dim);font-weight:500">vs</span> JMeter</h1>
+  <div style="height:3px;background:var(--k6);width:9rem;margin:1.2rem 0"></div>
+  <p class="lead" style="max-width:34rem">A performance-testing platform recommendation for Softaims &mdash; supported by a benchmark we ran on our own hardware.</p>
+  <div style="margin-top:2rem;display:flex;gap:3rem;font-family:'IBM Plex Mono',monospace;font-size:10pt;color:var(--ink-dim)">
+    <span>Prepared for engineering leadership</span>
+    <span>September 2026</span>
+    <span>k6 v2.2.0 &middot; JMeter 5.6.3</span>
+  </div>
+</div>
+
+<!-- ═══════════ 2 · BOTTOM LINE ═══════════ -->
+<div class="slide" data-n="02">
+  <div class="slide-head"><div class="eyebrow">The recommendation</div><h2>Adopt k6 as the default. Keep JMeter where it still wins.</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1">
+      <div class="card k6">
+        <span class="pill k6">Strategic default</span>
+        <h3 style="font-size:20pt;margin-top:.3rem">k6</h3>
+        <p>Every new performance-testing effort: REST, GraphQL, gRPC, WebSocket, microservices, Kubernetes, and CI performance gates.</p>
+        <ul style="margin-top:.3rem">
+          <li>Tests are code &mdash; reviewed in Git like everything else</li>
+          <li>Pass/fail thresholds built in, so CI can block a bad build</li>
+          <li>Arrival-rate models that reflect real customer behaviour</li>
+          <li>Far lighter on the load-generator machine</li>
+        </ul>
+      </div>
+      <div class="card jm">
+        <span class="pill jm">Specialised / legacy</span>
+        <h3 style="font-size:20pt;margin-top:.3rem">JMeter</h3>
+        <p>Retained deliberately &mdash; not deprecated &mdash; for the workloads k6 genuinely cannot reach.</p>
+        <ul style="margin-top:.3rem">
+          <li>JDBC, JMS, LDAP, FTP, SMTP and other enterprise protocols</li>
+          <li>Existing, stable <code>.jmx</code> suites that already deliver value</li>
+          <li>GUI-first workflows for QA colleagues who do not write code</li>
+          <li>Two decades of institutional knowledge and plugins</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout k6b">
+      <div class="lab">Why not simply replace JMeter</div>
+      <p>Softaims already advertises JMeter capability and holds real expertise in it. Removing it would discard an asset to solve a problem we do not have. The strongest position is not &ldquo;k6 <em>or</em> JMeter&rdquo; &mdash; it is <strong>k6 as the strategic platform, JMeter as the specialist tool.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 3 · SCORECARD ═══════════ -->
+<div class="slide" data-n="03">
+  <div class="slide-head"><div class="eyebrow">Assessment</div><h2>Scored against how Softaims actually works</h2></div>
+  <div class="body-area">
+    <div class="cols c2-wide" style="flex:1">
+      <div class="tbl-card">
+        <table>
+          <thead><tr><th>Area</th><th class="n">k6</th><th class="n">JMeter</th></tr></thead>
+          <tbody>
+            <tr><td>Measurement &amp; workload accuracy</td><td class="n k6c">9.2</td><td class="n">8.5</td></tr>
+            <tr><td>CPU / resource efficiency</td><td class="n k6c">9.5</td><td class="n">6.5</td></tr>
+            <tr><td>CI/CD integration</td><td class="n k6c">10</td><td class="n">7.5</td></tr>
+            <tr><td>Maintainability over years</td><td class="n k6c">9.5</td><td class="n">7.0</td></tr>
+            <tr><td>Protocol breadth</td><td class="n">7.5</td><td class="n jmc">10</td></tr>
+            <tr><td>Initial GUI usability</td><td class="n">8.0</td><td class="n jmc">9.0</td></tr>
+            <tr><td>Observability</td><td class="n k6c">9.5</td><td class="n">7.5</td></tr>
+            <tr><td>Enterprise maturity</td><td class="n">9.0</td><td class="n jmc">10</td></tr>
+            <tr><td>Modern development workflow</td><td class="n k6c">10</td><td class="n">7.0</td></tr>
+            <tr style="border-top:2px solid var(--rule)"><td><strong>Weighted for Softaims</strong></td><td class="n k6c" style="font-size:14pt"><strong>8.9</strong></td><td class="n jmc" style="font-size:14pt"><strong>7.9</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="card">
+          <h3>JMeter wins three categories</h3>
+          <p>Protocol breadth, GUI usability and enterprise maturity. Each is real &mdash; and none of them is on the critical path for the API and cloud work that dominates our pipeline.</p>
+        </div>
+        <div class="callout">
+          <div class="lab">Read this honestly</div>
+          <p>These weights are an <strong>engineering judgement</strong> about Softaims' workload mix, not a measurement. A company running mostly JDBC and JMS testing would score the same two tools the other way round.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 4 · ARCHITECTURE ═══════════ -->
+<div class="slide" data-n="04">
+  <div class="slide-head"><div class="eyebrow">Root cause</div><h2>One architectural decision explains most of the difference</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1">
+      <div class="card jm">
+        <span class="pill jm">JMeter &middot; JVM</span>
+<pre>Virtual User
+     ↓
+<span class="jmc">Java Thread</span>          ← one OS thread each
+     ↓
+HTTP / JDBC / JMS / …</pre>
+        <p>Each virtual user is backed by a real operating-system thread. Simple to reason about, but the machine pays for every one of them in memory and scheduling.</p>
+      </div>
+      <div class="card k6">
+        <span class="pill k6">k6 &middot; Go</span>
+<pre>Virtual User
+     ↓
+<span class="k6c">lightweight context</span>   ← multiplexed
+     ↓
+Go runtime
+     ↓
+HTTP / gRPC / WebSocket / …</pre>
+        <p>Many virtual users share a small pool of OS threads. Test logic is JavaScript; the engine underneath is compiled Go.</p>
+      </div>
+    </div>
+    <div class="callout k6b">
+      <div class="lab">Measured on our own machine &mdash; 1,000 virtual users</div>
+      <p>JMeter created <strong class="jmc">1,037 operating-system threads</strong>. k6 used <strong class="k6c">15</strong>. That is not a tuning setting &mdash; it is the architecture, and it drives the resource findings on the next slides.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 5 · ACCURACY / CO ═══════════ -->
+<div class="slide" data-n="05">
+  <div class="slide-head"><div class="eyebrow">Accuracy</div><h2>The real risk is not arithmetic &mdash; it is coordinated omission</h2></div>
+  <div class="body-area">
+    <p class="lead">Both tools compute averages, percentiles, throughput and error rates correctly. The question that actually matters is whether the generator delivered the workload you asked for.</p>
+    <div class="cols c2" style="flex:1">
+      <div class="card">
+        <h3 style="color:var(--jm)">Closed model &mdash; the trap</h3>
+<pre>Target        1,000 RPS
+
+Server slows down:
+200ms → 500ms → 1s → 3s
+
+Actual load delivered:
+1000 → 850 → 600 → <span class="jmc">300</span></pre>
+        <p>Users wait for a response before asking again, so the test <strong>withdraws pressure exactly when the system is struggling</strong> &mdash; and reports a healthier result than reality.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--k6)">Open model &mdash; the fix</h3>
+<pre>constant-arrival-rate
+ramping-arrival-rate
+
+Requests start on a clock,
+regardless of whether earlier
+ones have returned.
+
+Load stays at <span class="k6c">1,000 RPS</span></pre>
+        <p>This is how real customers behave: they arrive when they arrive. k6 also reports <code>dropped_iterations</code> when it <em>cannot</em> keep up &mdash; telling you the generator, not the server, is the limit.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="lab">Stated fairly</div>
+      <p>JMeter can model open workloads too, via its <strong>Open Model Thread Group</strong> and Precise Throughput Timer. This is not something JMeter cannot do &mdash; the semantics are simply cleaner and harder to misuse in k6. Apache's own documentation warns that incorrect thread sizing causes coordinated omission.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 6 · METRIC DEFINITIONS ═══════════ -->
+<div class="slide" data-n="06">
+  <div class="slide-head"><div class="eyebrow">Measurement trap</div><h2>Do not expect the two tools to report the same number</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1">
+      <div class="card k6">
+        <h3 class="k6c">k6 &middot; http_req_duration</h3>
+<pre>  sending
++ waiting
++ receiving
+─────────────
+  http_req_duration
+
+Reported separately:
+  http_req_connecting
+  http_req_tls_handshaking</pre>
+        <p>DNS, TCP and TLS setup are <strong>excluded</strong> from the headline duration and exposed as their own metrics.</p>
+      </div>
+      <div class="card jm">
+        <h3 class="jmc">JMeter &middot; Elapsed Time</h3>
+<pre>From just before the request
+is sent, until the complete
+response has been received.
+
+Reported separately:
+  Latency
+  Connect Time</pre>
+        <p>A different span, measured against a different starting point.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="lab">The consequence</div>
+      <p><span class="k6c mono">k6 = 240 ms</span> and <span class="jmc mono">JMeter = 255 ms</span> does <strong>not</strong> mean JMeter is slower or less accurate. Before comparing any two tools, confirm you are comparing equivalent metric definitions &mdash; otherwise you are measuring the documentation, not the system.</p>
+    </div>
+  </div>
+</div>
+<!-- ═══════════ 7 · OUR BENCHMARK ═══════════ -->
+<div class="slide" data-n="07">
+  <div class="slide-head"><div class="eyebrow">Evidence &middot; measured in-house</div><h2>We ran both tools ourselves rather than citing a blog</h2></div>
+  <div class="body-area">
+    <div class="cols c2-wide" style="flex:1">
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+        <div class="card">
+          <h3>Method</h3>
+          <p>Identical load profiles against a local target with a <strong>known, fixed 50&nbsp;ms latency</strong> &mdash; so whatever each tool <em>reports</em> can be checked against the truth. 1,000 virtual users, 30&nbsp;s ramp, 60&nbsp;s hold. Load-generator process sampled every 500&nbsp;ms.</p>
+        </div>
+        <div class="card">
+          <h3>Environment</h3>
+          <p class="mono" style="font-size:10.5pt">Windows 11 &middot; 8 logical cores &middot; 15.6 GB RAM<br>k6 v2.1.0 &middot; JMeter 5.6.3 &middot; OpenJDK 17<br>No listeners attached &middot; both runs 0% errors</p>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <table>
+          <thead><tr><th>Metric</th><th class="n">JMeter</th><th class="n">k6</th></tr></thead>
+          <tbody>
+            <tr><td>Peak memory</td><td class="n jmc">841 MB</td><td class="n k6c">320 MB</td></tr>
+            <tr><td>Peak OS threads</td><td class="n jmc">1,037</td><td class="n k6c">15</td></tr>
+            <tr><td>CPU seconds</td><td class="n jmc">28.19</td><td class="n k6c">21.08</td></tr>
+            <tr><td>Memory per VU</td><td class="n jmc">0.76 MB</td><td class="n k6c">0.17 MB</td></tr>
+            <tr><td>Requests completed</td><td class="n">69,027</td><td class="n">71,343</td></tr>
+            <tr><td>Throughput</td><td class="n">765/s</td><td class="n">784/s</td></tr>
+            <tr style="border-top:2px solid var(--rule)"><td>Reported latency<br><span style="font-size:9.5pt;color:var(--ink-dim)">true value = 50 ms</span></td><td class="n jmc">61.7 ms</td><td class="n k6c">56.8 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout k6b">
+      <div class="lab">What this earns us</div>
+      <p>Every figure is reproducible from the harness in our repository. In a room, &ldquo;we measured this on our hardware&rdquo; ends an argument that &ldquo;a blog said so&rdquo; only starts.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 8 · RESOURCE ═══════════ -->
+<div class="slide" data-n="08">
+  <div class="slide-head"><div class="eyebrow">Resource consumption</div><h2>k6 is lighter &mdash; and the gap widens with scale</h2></div>
+  <div class="body-area">
+    <div class="cols c3">
+      <div class="card"><div class="stat"><span class="lab">Peak memory</span><span class="num k6c">2.6&times;</span><span class="sub">less than JMeter &mdash; measured at 1,000 VUs</span></div></div>
+      <div class="card"><div class="stat"><span class="lab">OS threads</span><span class="num k6c">69&times;</span><span class="sub">fewer &mdash; 15 against 1,037</span></div></div>
+      <div class="card"><div class="stat"><span class="lab">CPU consumed</span><span class="num k6c">1.34&times;</span><span class="sub">less for equivalent work</span></div></div>
+    </div>
+
+    <div style="margin-top:.4rem">
+      <div class="bar-row">
+        <span class="name">Memory &mdash; JMeter</span>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--jm)"></div></div>
+        <span class="val jmc">841 MB</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Memory &mdash; k6</span>
+        <div class="bar-track"><div class="bar-fill" style="width:38.1%;background:var(--k6)"></div></div>
+        <span class="val k6c">320 MB</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Threads &mdash; JMeter</span>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--jm)"></div></div>
+        <span class="val jmc">1,037</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Threads &mdash; k6</span>
+        <div class="bar-track"><div class="bar-fill" style="width:1.4%;background:var(--k6)"></div></div>
+        <span class="val k6c">15</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="lab">An honest caveat on the bigger published numbers</div>
+      <p>A widely cited 2026 benchmark reports far larger gaps at <strong>10,000</strong> VUs &mdash; 2.8 GB against 22.4 GB, and roughly 3.3&times; the VU density per node. Our 1,000-VU result shows a more modest 2.6&times;. Both can be true: <strong>the thread-per-user cost compounds as concurrency rises.</strong> Treat published figures as directional, and size infrastructure from our own measurements.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 9 · JMETER OVERHEAD ═══════════ -->
+<div class="slide" data-n="09">
+  <div class="slide-head"><div class="eyebrow">Operating discipline</div><h2>Most JMeter overhead complaints are configuration, not the tool</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1">
+      <div class="card jm">
+        <h3 style="color:var(--jm)">What distorts a JMeter test</h3>
+<pre>JMeter GUI
++ View Results Tree
++ View Results Table
++ assertions everywhere
++ multiple plugins
++ large saved responses</pre>
+        <p>Apache's own best-practice guidance names these directly: run in non-GUI mode, avoid heavy listeners during the run, minimise assertions and limit saved response data.</p>
+      </div>
+      <div class="card k6">
+        <h3 style="color:var(--k6)">How production JMeter should run</h3>
+<pre>jmeter -n -t test.jmx -l results.jtl
+
+then, separately:
+
+jmeter -g results.jtl -o report</pre>
+        <p>The GUI is for <strong>authoring and debugging only</strong>. Every real measurement goes through headless mode &mdash; which also removes the single largest source of overhead.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="lab">Applies to both tools</div>
+      <p>The universal rule is that <strong>the load generator must never be saturated</strong>. If its CPU, memory or network is maxed out, the target never received the intended load and no conclusion about the target is defensible. Publish the generator's own utilisation next to every result.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 10 · PLUGINS ═══════════ -->
+<div class="slide" data-n="10">
+  <div class="slide-head"><div class="eyebrow">Extensions</div><h2>Both ecosystems can add overhead &mdash; browser testing most of all</h2></div>
+  <div class="body-area">
+    <div class="cols c2">
+      <div class="card jm">
+        <h3 class="jmc">JMeter plugins</h3>
+        <p>Simultaneously the greatest strength and the biggest operational risk. Listeners in particular are dangerous during high load; plugins also bring dependency and version-management burden.</p>
+      </div>
+      <div class="card k6">
+        <h3 class="k6c">k6 extensions</h3>
+        <p>Overhead depends entirely on what the extension does. A data-generation extension is close to free. Modern k6 resolves supported extensions automatically; others need a custom binary.</p>
+      </div>
+    </div>
+    <div class="callout" style="border-left-color:var(--jm)">
+      <div class="lab" style="color:var(--jm)">The expensive case &mdash; real browsers</div>
+      <p>k6 browser testing runs actual Chromium processes, which carry substantial per-VU cost. Grafana recommends a <strong>hybrid model</strong> rather than attempting thousands of full-browser users.</p>
+    </div>
+    <div class="cols c2">
+      <div class="card" style="border-top:3px solid var(--jm)">
+        <h3 style="color:var(--jm);font-size:12pt">Do not do this</h3>
+        <pre style="font-size:11pt">10,000 Chromium browser users</pre>
+      </div>
+      <div class="card" style="border-top:3px solid var(--win)">
+        <h3 style="color:var(--win);font-size:12pt">Do this instead</h3>
+        <pre style="font-size:11pt">9,990 protocol-level users
++    10 real browser users</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 11 · EASE OF USE ═══════════ -->
+<div class="slide" data-n="11">
+  <div class="slide-head"><div class="eyebrow">Adoption</div><h2>Which is easier depends entirely on who is holding it</h2></div>
+  <div class="body-area">
+    <div class="cols c2-wide" style="flex:1">
+      <div class="tbl-card">
+        <table>
+          <thead><tr><th>Role</th><th>Better fit</th></tr></thead>
+          <tbody>
+            <tr><td>Manual QA engineer</td><td class="jmc">JMeter</td></tr>
+            <tr><td>QA who does not write code</td><td class="jmc">JMeter</td></tr>
+            <tr><td>Java-heavy legacy team</td><td class="jmc">JMeter</td></tr>
+            <tr><td>Developer</td><td class="k6c">k6</td></tr>
+            <tr><td>SDET</td><td class="k6c">k6</td></tr>
+            <tr><td>DevOps</td><td class="k6c">k6</td></tr>
+            <tr><td>SRE</td><td class="k6c">k6</td></tr>
+            <tr><td>JavaScript / TypeScript team</td><td class="k6c">k6</td></tr>
+            <tr><td>CI/CD-first organisation</td><td class="k6c">k6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+        <div class="card">
+          <h3>One engineer, first test</h3>
+          <p>JMeter feels easier: drop in a Thread Group, an HTTP Request, a Listener, press run. No syntax to learn.</p>
+        </div>
+        <div class="card">
+          <h3>Fifty engineers, three years</h3>
+<pre style="font-size:10.5pt">.js / .ts
+   → Git
+   → pull request
+   → code review
+   → CI
+   → thresholds</pre>
+          <p style="margin-top:.3rem">That loop is far cleaner than repeatedly hand-editing large <code>.jmx</code> XML files that nobody can meaningfully review.</p>
+        </div>
+      </div>
+    </div>
+    <div class="callout k6b">
+      <div class="lab">The distinction that matters</div>
+      <p>JMeter is easier to <strong>start</strong>. k6 is easier to <strong>live with</strong>. Softaims is optimising for the second.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 12 · CI/CD ═══════════ -->
+<div class="slide" data-n="12">
+  <div class="slide-head"><div class="eyebrow">CI/CD &mdash; the decisive factor</div><h2>Performance requirements become code that fails the build</h2></div>
+  <div class="body-area">
+    <div class="cols c2-wide" style="flex:1">
+      <div>
+<pre>export const options = {
+  thresholds: {
+    http_req_duration: [
+      '<span class="k6c">p(95)&lt;500</span>',
+      '<span class="k6c">p(99)&lt;1000</span>'
+    ],
+    http_req_failed: [
+      '<span class="k6c">rate&lt;0.01</span>'
+    ]
+  }
+};</pre>
+        <p style="margin-top:.7rem">The service-level objective lives beside the test, in version control, reviewed like any other change.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+        <div class="card k6">
+          <h3>What happens on breach</h3>
+<pre style="font-size:11pt">CI pipeline
+   ↓
+k6 run
+   ↓
+threshold failed
+   ↓
+<span style="color:var(--jm)">build fails</span></pre>
+        </div>
+        <div class="callout k6b">
+          <div class="lab">Why this is the biggest single factor</div>
+          <p>A performance regression caught in CI costs minutes. The same regression found in production costs an incident. JMeter works in CI too &mdash; but k6's whole workflow already behaves like unit and integration testing, so nobody has to build the glue.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 13 · OBSERVABILITY ═══════════ -->
+<div class="slide" data-n="13">
+  <div class="slide-head"><div class="eyebrow">Analysis</div><h2>Do not stop at the tool's own summary report</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1">
+      <div class="card">
+        <h3>The pipeline worth building</h3>
+<pre>LOAD GENERATOR          APPLICATION
+      ↓                      ↓
+     k6              OpenTelemetry / APM
+      ↓                      ↓
+  Prometheus  ─────────→  Grafana</pre>
+        <p style="margin-top:.5rem">k6 supports metrics output integrations directly, which is a natural fit for a Grafana-oriented stack.</p>
+      </div>
+      <div class="card">
+        <h3>What to correlate</h3>
+        <div class="cols c2" style="gap:.2rem 1rem;margin-top:.3rem">
+          <ul style="margin:0"><li>RPS</li><li>p95 / p99</li><li>Error rate</li><li>CPU</li><li>Memory</li></ul>
+          <ul style="margin:0"><li>DB connections</li><li>Cache hit rate</li><li>Garbage collection</li><li>Container throttling</li><li>Queue depth</li></ul>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="lab">Why correlation is the whole point</div>
+      <p>&ldquo;p99 was 1.8 seconds&rdquo; is an observation. <strong>&ldquo;p99 was 1.8 seconds, coinciding with database CPU at 95% and connection-pool saturation&rdquo;</strong> is a finding an engineer can act on. Only the second one changes anything.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 14 · LITTLE'S LAW ═══════════ -->
+<div class="slide" data-n="14">
+  <div class="slide-head"><div class="eyebrow">Load sizing</div><h2>Little's Law turns a traffic figure into a test configuration</h2></div>
+  <div class="body-area">
+    <div style="background:var(--surface);border:1px solid var(--gold);border-radius:6px;padding:.9rem;text-align:center">
+      <span class="mono" style="font-size:17pt;color:var(--gold)">Concurrency &asymp; Throughput &times; Response Time</span>
+    </div>
+    <div class="cols c3" style="flex:1">
+      <div class="card">
+        <h3>1 &middot; In-flight requests</h3>
+<pre>Peak     = 500 RPS
+p95      = 400 ms
+
+500 × 0.4
+= <span class="k6c">200 in flight</span></pre>
+      </div>
+      <div class="card">
+        <h3>2 &middot; Transactions</h3>
+<pre>4 API calls per
+user transaction
+
+500 ÷ 4
+= <span class="k6c">125 txn/sec</span>
+
+Transaction takes 2 s
+125 × 2 = <span class="k6c">250 VUs</span></pre>
+      </div>
+      <div class="card">
+        <h3>3 &middot; Add headroom</h3>
+<pre>250 × 1.30
+= <span class="k6c">325 VUs</span>
+
+Never provision exactly
+to the calculated figure.</pre>
+      </div>
+    </div>
+    <div class="cols c2">
+      <div class="card k6">
+        <h3 class="k6c">The resulting k6 model</h3>
+<pre style="font-size:11pt">Target             125 iterations/sec
+Requests/iteration   4
+Expected RPS       ~500
+Preallocated VUs   ~325</pre>
+      </div>
+      <div class="callout k6b">
+        <div class="lab">The metric that protects you</div>
+        <p>k6 reports <code>dropped_iterations</code> when it cannot start work because no VU is free. That is the generator telling you it failed to deliver the workload &mdash; the single most important signal for trusting a result.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══════════ 15 · PROCESS ═══════════ -->
+<div class="slide" data-n="15">
+  <div class="slide-head"><div class="eyebrow">Method</div><h2>The end-to-end process, whichever tool runs it</h2></div>
+  <div class="body-area">
+    <div class="cols c3" style="flex:1;gap:.8rem">
+      <div class="card">
+        <span class="pill k6">Before testing</span>
+        <ul style="margin-top:.4rem">
+          <li><strong>1 · Get production data.</strong> Peak RPS, transaction mix, concurrency, payload sizes, think time &mdash; not &ldquo;we need 1,000 users&rdquo;.</li>
+          <li><strong>2 · Define SLOs first.</strong> p95 &lt; 500 ms, p99 &lt; 1 s, errors &lt; 1%, CPU &lt; 75%, pool &lt; 80%.</li>
+          <li><strong>3 · Model the business mix.</strong> Login 10%, browse 50%, search 25%, checkout 10%, account 5%.</li>
+          <li><strong>4 · Smoke test with one user.</strong> Auth, correlation, tokens, cleanup, assertions.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill k6">Running</span>
+        <ul style="margin-top:.4rem">
+          <li><strong>5 · Baseline.</strong> Low load to establish normal behaviour.</li>
+          <li><strong>6 · Validate the generator.</strong> Its CPU, RAM, network and dropped iterations &mdash; before trusting anything.</li>
+          <li><strong>7 · Normal load.</strong> Reproduce expected production peak.</li>
+          <li><strong>8 · Stress.</strong> Push past peak until behaviour changes materially.</li>
+          <li><strong>9 · Spike.</strong> Sudden events, e.g. 100 → 1,000 RPS, and measure recovery.</li>
+          <li><strong>10 · Soak.</strong> Sustained load long enough to expose leaks.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill k6">After</span>
+        <ul style="margin-top:.4rem">
+          <li><strong>11 · Correlate with telemetry.</strong> A p99 figure means little until you can name the resource that caused it.</li>
+          <li><strong>12 · Put small tests in CI.</strong> Full stress and soak runs do not belong on every commit &mdash; smoke and baseline gates do.</li>
+        </ul>
+        <div class="callout k6b" style="margin-top:.5rem;padding:.6rem .8rem">
+          <p style="font-size:10.5pt">Steps 1, 2 and 6 are where most load-testing programmes fail &mdash; and none of them is about tool choice.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 16 · MOMENTUM ═══════════ -->
+<div class="slide" data-n="16">
+  <div class="slide-head"><div class="eyebrow">Direction of travel</div><h2>Where the ecosystem is moving</h2></div>
+  <div class="body-area">
+    <div class="cols c2-wide" style="flex:1">
+      <div class="tbl-card">
+        <table>
+          <thead><tr><th>Indicator</th><th class="n">k6</th><th class="n">JMeter</th></tr></thead>
+          <tbody>
+            <tr><td>GitHub stars</td><td class="n k6c">31,368</td><td class="n">9,523</td></tr>
+            <tr><td>GitHub forks</td><td class="n">1,617</td><td class="n jmc">2,287</td></tr>
+            <tr><td>Current version</td><td class="n k6c">v2.2.0</td><td class="n">5.6.3</td></tr>
+            <tr><td>Latest release date</td><td class="n k6c">Aug 2026</td><td class="n jmc">Jan 2024</td></tr>
+            <tr><td>Last commit</td><td class="n k6c">2 Sep 2026</td><td class="n">27 Aug 2026</td></tr>
+            <tr><td>Cloud / CI focus</td><td class="n k6c">Very strong</td><td class="n">Moderate</td></tr>
+            <tr><td>Legacy enterprise presence</td><td class="n">Strong</td><td class="n jmc">Very strong</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:9.5pt;padding:.4rem .7rem 0;color:var(--ink-dim)">GitHub API, 2 September 2026. Forks favour JMeter, largely reflecting its greater age.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+        <div class="card"><div class="stat"><span class="lab">Star ratio</span><span class="num k6c">3.3&times;</span><span class="sub">in k6's favour &mdash; more answers when we are stuck, and more candidates who already know the tool</span></div></div>
+        <div class="callout">
+          <div class="lab">Stated fairly</div>
+          <p>Both repositories are alive &mdash; JMeter had a commit last week. The meaningful difference is <strong>delivery</strong>: no stable JMeter release since January 2024, while k6 has moved through two major versions. That is not evidence JMeter is dying; it has an enormous installed base and unmatched plugin history.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 17 · PROTOCOLS ═══════════ -->
+<div class="slide" data-n="17">
+  <div class="slide-head"><div class="eyebrow">Where JMeter is simply better</div><h2>Protocol breadth is not a close contest</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1">
+      <div class="card jm">
+        <h3 class="jmc">JMeter reaches</h3>
+<pre>JDBC          SMTP
+JMS           POP3 / IMAP
+FTP           TCP
+LDAP          Java objects
+              SOAP-heavy systems</pre>
+        <p>Built from the start around broad sampler and protocol support. If Softaims needs to load-test a database directly or drive a message queue, this is the tool &mdash; k6 cannot do it natively.</p>
+      </div>
+      <div class="card k6">
+        <h3 class="k6c">k6 reaches</h3>
+<pre>HTTP / HTTPS      HTTP/2
+REST APIs         gRPC
+GraphQL           WebSocket
+                  Browser (Chromium)</pre>
+        <p>Deliberately focused on modern application protocols, extensible beyond them. Official extensions now include SQL with MySQL and Postgres drivers &mdash; so &ldquo;k6 cannot touch a database&rdquo; is no longer strictly true, though JMeter remains far broader.</p>
+      </div>
+    </div>
+    <div class="callout" style="border-left-color:var(--jm)">
+      <div class="lab" style="color:var(--jm)">This decision would flip</div>
+      <p>If Softaims' work were dominated by legacy enterprise infrastructure &mdash; direct JDBC load, JMS queues, LDAP directories &mdash; the recommendation on slide 2 would read the other way round. It does not, and that is why k6 wins here.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 18 · POLICY ═══════════ -->
+<div class="slide" data-n="18">
+  <div class="slide-head"><div class="eyebrow">The policy</div><h2>What we standardise, workload by workload</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1;gap:1.2rem">
+      <div class="tbl-card">
+        <table>
+          <thead><tr><th>Workload</th><th>Standard</th></tr></thead>
+          <tbody>
+            <tr><td>New REST / API performance test</td><td class="k6c">k6</td></tr>
+            <tr><td>GraphQL API</td><td class="k6c">k6</td></tr>
+            <tr><td>gRPC</td><td class="k6c">k6</td></tr>
+            <tr><td>WebSocket</td><td class="k6c">k6</td></tr>
+            <tr><td>CI performance gate</td><td class="k6c">k6</td></tr>
+            <tr><td>Kubernetes / cloud-native</td><td class="k6c">k6</td></tr>
+            <tr><td>Microservices</td><td class="k6c">k6</td></tr>
+            <tr><td>Hybrid browser + backend</td><td class="k6c">k6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-card">
+        <table>
+          <thead><tr><th>Workload</th><th>Standard</th></tr></thead>
+          <tbody>
+            <tr><td>Existing stable JMeter suite</td><td class="jmc">Keep JMeter</td></tr>
+            <tr><td>JDBC direct load test</td><td class="jmc">JMeter</td></tr>
+            <tr><td>JMS</td><td class="jmc">JMeter</td></tr>
+            <tr><td>LDAP / FTP / SMTP</td><td class="jmc">JMeter</td></tr>
+            <tr><td>GUI-only QA workflow</td><td class="jmc">JMeter</td></tr>
+          </tbody>
+        </table>
+        <div class="callout k6b" style="margin:.7rem .3rem .3rem">
+          <p style="font-size:11pt">No migration project. Existing suites keep running until there is a reason to touch them.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 19 · ARCHITECTURE ═══════════ -->
+<div class="slide" data-n="19">
+  <div class="slide-head"><div class="eyebrow">Target state</div><h2>Two platforms, one performance practice</h2></div>
+  <div class="body-area" style="justify-content:center">
+    <figure style="margin:0">
+      <svg viewBox="0 0 980 300" role="img" aria-label="Softaims performance platform: k6 for new projects, APIs, cloud and CI gates; JMeter for legacy and special protocols.">
+        <rect x="390" y="6" width="200" height="42" rx="5" fill="#141B26" stroke="#26313F"/>
+        <text x="490" y="33" text-anchor="middle" font-family="Manrope, sans-serif" font-size="17" font-weight="700" fill="#EFF4FA">Softaims</text>
+
+        <line x1="490" y1="48" x2="490" y2="76" stroke="#26313F" stroke-width="2"/>
+        <rect x="345" y="76" width="290" height="38" rx="5" fill="#141B26" stroke="#26313F"/>
+        <text x="490" y="100" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="#A4B3C4">Performance Engineering Practice</text>
+
+        <line x1="490" y1="114" x2="490" y2="140" stroke="#26313F" stroke-width="2"/>
+        <line x1="255" y1="140" x2="725" y2="140" stroke="#26313F" stroke-width="2"/>
+        <line x1="255" y1="140" x2="255" y2="168" stroke="#4CA6FF" stroke-width="2"/>
+        <line x1="725" y1="140" x2="725" y2="168" stroke="#FF9F45" stroke-width="2"/>
+
+        <rect x="120" y="168" width="270" height="52" rx="5" fill="rgba(76,166,255,.13)" stroke="#4CA6FF" stroke-width="1.5"/>
+        <text x="255" y="192" text-anchor="middle" font-family="Manrope, sans-serif" font-size="19" font-weight="800" fill="#4CA6FF">k6</text>
+        <text x="255" y="211" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#A4B3C4">STRATEGIC DEFAULT</text>
+
+        <rect x="590" y="168" width="270" height="52" rx="5" fill="rgba(255,159,69,.13)" stroke="#FF9F45" stroke-width="1.5"/>
+        <text x="725" y="192" text-anchor="middle" font-family="Manrope, sans-serif" font-size="19" font-weight="800" fill="#FF9F45">JMeter</text>
+        <text x="725" y="211" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#A4B3C4">SPECIALIST / LEGACY</text>
+
+        <g font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="#A4B3C4" text-anchor="middle">
+          <text x="255" y="248">New projects · APIs · GraphQL · gRPC</text>
+          <text x="255" y="268">Cloud · microservices · Kubernetes</text>
+          <text x="255" y="288">CI gates · SLO thresholds · observability</text>
+          <text x="725" y="248">JDBC · JMS · LDAP · FTP · SMTP</text>
+          <text x="725" y="268">Existing stable .jmx suites</text>
+          <text x="725" y="288">GUI-first QA workflows</text>
+        </g>
+      </svg>
+    </figure>
+  </div>
+</div>
+
+<!-- ═══════════ 20 · BOTTOM LINE ═══════════ -->
+<div class="slide" data-n="20">
+  <div class="slide-head"><div class="eyebrow">Bottom line</div><h2>Why k6, stated plainly</h2></div>
+  <div class="body-area">
+    <p class="lead">Not because JMeter's calculations are wrong &mdash; they are not. Because the combination is stronger for the work Softaims actually does.</p>
+    <div class="cols c2" style="flex:1;gap:1.2rem">
+      <div class="card k6">
+        <h3 class="k6c" style="font-size:15pt">k6 leads on</h3>
+        <div class="cols c2" style="gap:.1rem 1rem;margin-top:.3rem">
+          <ul style="margin:0"><li>Workload modelling</li><li>CPU efficiency</li><li>Memory efficiency</li><li>CI/CD integration</li><li>Git &amp; code review</li></ul>
+          <ul style="margin:0"><li>Developer experience</li><li>SLO automation</li><li>Cloud &amp; Kubernetes</li><li>Modern API testing</li><li>Release momentum</li></ul>
+        </div>
+      </div>
+      <div class="card jm">
+        <h3 class="jmc" style="font-size:15pt">JMeter leads on</h3>
+        <ul style="margin-top:.3rem">
+          <li>Protocol breadth</li>
+          <li>GUI friendliness for non-coders</li>
+          <li>Legacy enterprise integration</li>
+          <li>Version stability across years</li>
+        </ul>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--k6);border-radius:6px;padding:1rem 1.3rem;display:flex;align-items:center;gap:2rem">
+      <div style="flex:1">
+        <div class="mono" style="font-size:9.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--k6);margin-bottom:.35rem">The decision</div>
+        <p style="font-size:14pt;color:var(--ink)"><strong class="k6c">k6 = strategic default.</strong> &nbsp; <strong class="jmc">JMeter = specialist tool.</strong></p>
+      </div>
+      <p style="flex:1.2;font-size:11.5pt">This modernises our performance engineering without discarding the JMeter expertise and assets we already offer clients &mdash; while moving new work toward tests-as-code, CI gates, arrival-rate modelling and real observability.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 21 · REFERENCES ═══════════ -->
+<div class="slide" data-n="21">
+  <div class="slide-head"><div class="eyebrow">References</div><h2>Sources</h2></div>
+  <div class="body-area">
+    <div class="cols c2" style="flex:1;gap:1.4rem;font-size:10.5pt">
+      <div>
+        <h3 style="margin-bottom:.5rem;font-size:12pt">Primary &mdash; our own measurement</h3>
+        <ul style="font-size:10.5pt">
+          <li><strong>In-house benchmark</strong>, 1,000 VUs, known 50 ms target. Harness and raw results: <span class="mono">benchmarks/</span> in the k6 Load Lab repository. Reproducible.</li>
+          <li><strong>Load Testing Mathematics &amp; Engineering</strong> &mdash; internal 44-page reference, <span class="mono">benchmarks/</span>.</li>
+        </ul>
+        <h3 style="margin:.9rem 0 .5rem;font-size:12pt">Official documentation</h3>
+        <ul style="font-size:10.5pt">
+          <li>Grafana k6 &mdash; open and closed models<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/using-k6/scenarios/concepts/open-vs-closed/</span></li>
+          <li>Grafana k6 &mdash; built-in metrics reference<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/using-k6/metrics/reference/</span></li>
+          <li>Grafana k6 &mdash; thresholds<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/using-k6/thresholds/</span></li>
+          <li>Grafana k6 &mdash; arrival-rate VU allocation<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/using-k6/scenarios/concepts/arrival-rate-vu-allocation/</span></li>
+          <li>Grafana k6 &mdash; browser hybrid approach<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/using-k6-browser/recommended-practices/</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.5rem;font-size:12pt">Official documentation, continued</h3>
+        <ul style="font-size:10.5pt">
+          <li>Grafana k6 &mdash; fine-tune OS, VU memory guidance<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/set-up/fine-tune-os/</span></li>
+          <li>Grafana k6 &mdash; extensions<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">grafana.com/docs/k6/latest/extensions/</span></li>
+          <li>Apache JMeter &mdash; best practices (non-GUI mode, listeners, thread sizing, coordinated omission)<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">jmeter.apache.org/usermanual/best-practices.html</span></li>
+          <li>Apache JMeter &mdash; glossary (Elapsed Time, Latency)<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">jmeter.apache.org/usermanual/glossary.html</span></li>
+          <li>Apache JMeter &mdash; elements of a test plan<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">jmeter.apache.org/usermanual/test_plan.html</span></li>
+        </ul>
+        <h3 style="margin:.9rem 0 .5rem;font-size:12pt">Repository statistics &amp; third-party</h3>
+        <ul style="font-size:10.5pt">
+          <li>GitHub API, retrieved 2 September 2026<br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">api.github.com/repos/grafana/k6 · api.github.com/repos/apache/jmeter</span></li>
+          <li>Software Test Pilot &mdash; 10,000-VU k6 vs JMeter benchmark, July 2026. <em>Self-described as directional, not lab-grade; tested an older k6 release.</em><br><span class="mono" style="font-size:9pt;color:var(--ink-dim)">softwaretestpilot.com/blog/performance-testing/</span></li>
+          <li>PeerSpot category mindshare, August 2026. <em>One site's engagement metric &mdash; not installed-base market share.</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
