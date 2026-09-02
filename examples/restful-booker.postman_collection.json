@@ -1,0 +1,187 @@
+{
+  "info": {
+    "_postman_id": "b00c1e55-7a41-4c2f-9d10-restfulbooker01",
+    "name": "restful-booker",
+    "description": "The public restful-booker practice API. Order matters: CreateToken runs first and captures the auth token, then CreateBooking captures a real booking id for the later requests. Use Safe mode for a read-only run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://restful-booker.herokuapp.com", "type": "string" },
+    { "key": "username", "value": "admin", "type": "string" },
+    { "key": "password", "value": "password123", "type": "string" },
+    { "key": "bookingid", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Ping",
+      "item": [
+        {
+          "name": "HealthCheck",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/ping", "host": ["{{baseUrl}}"], "path": ["ping"] },
+            "description": "Confirms the API is up. Note: this endpoint answers 201, not 200."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "CreateToken",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/auth", "host": ["{{baseUrl}}"], "path": ["auth"] },
+            "description": "Returns { token } which the PUT, PATCH and DELETE requests send as a Cookie."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Booking",
+      "item": [
+        {
+          "name": "GetBookingIds",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] },
+            "description": "Returns every booking id. The heaviest read on the API."
+          },
+          "response": []
+        },
+        {
+          "name": "GetBooking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["booking", ":id"],
+              "variable": [{ "key": "id", "value": "{{bookingid}}" }]
+            },
+            "description": "Reads one booking. Uses the id captured by CreateBooking, or the default."
+          },
+          "response": []
+        },
+        {
+          "name": "CreateBooking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"bookingid\", pm.response.json().bookingid);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"{{$randomFirstName}}\",\n  \"lastname\": \"LoadTest\",\n  \"totalprice\": {{$randomInt}},\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-01-01\",\n    \"checkout\": \"2026-01-05\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] },
+            "description": "Creates a booking and captures its id. WRITES DATA - excluded by Safe mode."
+          },
+          "response": []
+        },
+        {
+          "name": "UpdateBooking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"James\",\n  \"lastname\": \"LoadTest\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-01-01\",\n    \"checkout\": \"2026-01-05\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["booking", ":id"],
+              "variable": [{ "key": "id", "value": "{{bookingid}}" }]
+            },
+            "description": "Full update. Needs the captured token. WRITES DATA - excluded by Safe mode."
+          },
+          "response": []
+        },
+        {
+          "name": "PartialUpdateBooking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Partial\",\n  \"lastname\": \"Updated\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["booking", ":id"],
+              "variable": [{ "key": "id", "value": "{{bookingid}}" }]
+            },
+            "description": "Partial update. WRITES DATA - excluded by Safe mode."
+          },
+          "response": []
+        },
+        {
+          "name": "DeleteBooking",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["booking", ":id"],
+              "variable": [{ "key": "id", "value": "{{bookingid}}" }]
+            },
+            "description": "Deletes the booking. Answers 201, not 200. DESTRUCTIVE - excluded by Safe mode."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
