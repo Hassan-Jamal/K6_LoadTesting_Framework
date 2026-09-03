@@ -4,9 +4,6 @@ node_modules/
 k6lab-runs/
 data/
 
-# Vendored at install time by scripts/vendor.js
-public/vendor/
-
 *.log
 .DS_Store
 benchmarks/results/jmeter-native-dashboard/
@@ -17,3 +14,4 @@ benchmarks/results/
 benchmarks/*.pdf
 benchmarks/*.html
 benchmarks/render-*.js
+*.tgz

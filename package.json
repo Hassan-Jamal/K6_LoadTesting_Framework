@@ -1,7 +1,7 @@
 {
   "name": "k6-load-lab",
   "version": "1.0.0",
-  "description": "Run any Postman collection as a k6 load test - live ramp charts, HTML reports, and a CLI that exits non-zero when an SLA breaks.",
+  "description": "Run any Postman collection as a k6 load test from a local web console - live charts, HTML reports, and CI-ready exit codes.",
   "type": "commonjs",
   "main": "server/index.js",
   "scripts": {
@@ -9,11 +9,11 @@
     "ui": "node bin/k6lab.js ui",
     "doctor": "node bin/k6lab.js doctor",
     "demo": "node bin/k6lab.js run examples/sample_postman_collection.json --base-url https://test.k6.io --safe --preset smoke --yes",
-    "postinstall": "node scripts/vendor.js"
+    "setup": "node bin/k6lab.js setup"
   },
   "dependencies": {
     "chart.js": "^4.4.7",
-    "express": "^4.21.2",
+    "express": "^5.2.1",
     "ws": "^8.18.0"
   },
   "engines": {
@@ -26,9 +26,11 @@
     "bin",
     "server",
     "public",
-    "scripts",
-    "examples",
-    "README.md"
+    "examples/sample_postman_collection.json",
+    "examples/restful-booker.postman_collection.json",
+    "examples/k6lab.config.json",
+    "README.md",
+    "LICENSE"
   ],
   "license": "MIT",
   "keywords": [

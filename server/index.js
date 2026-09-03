@@ -46,6 +46,31 @@ const runner = new Runner({
 });
 
 app.use(express.json({ limit: '128mb' }));
+/**
+ * Chart.js is served straight out of node_modules. Copying it into public/ at
+ * install time used to work, but a user installing with --ignore-scripts would
+ * silently get a console with no charts.
+ */
+function chartJsPath() {
+  try {
+    // chart.js restricts deep subpaths through "exports", so resolve the
+    // package entry point and walk back to its root to reach the UMD build.
+    const entry = require.resolve('chart.js'); // .../chart.js/dist/chart.cjs
+    const candidate = path.join(path.dirname(entry), 'chart.umd.js');
+    if (fs.existsSync(candidate)) return candidate;
+  } catch (err) {
+    /* not installed - fall through */
+  }
+  const vendored = path.join(ROOT, 'public', 'vendor', 'chart.umd.js');
+  return fs.existsSync(vendored) ? vendored : null;
+}
+
+app.get('/vendor/chart.umd.js', (req, res, next) => {
+  const file = chartJsPath();
+  if (!file) return next();
+  res.type('application/javascript').sendFile(file);
+});
+
 app.use(express.static(path.join(ROOT, 'public')));
 
 // --- live feed --------------------------------------------------------------

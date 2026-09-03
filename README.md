@@ -14,16 +14,27 @@ you can change however you like.
 ```
 
 ---
-
 ## Setup
 
-### 1. Install Node.js 18+
+Three short commands. You need **Node.js 18+** (`node -v`; get it from <https://nodejs.org>).
 
-Check with `node -v`. If you need it: <https://nodejs.org> (LTS is fine).
+```bash
+npm install -g k6-load-lab   # 1. install
+k6lab setup                  # 2. fetch the k6 binary
+k6lab ui                     # 3. open the console at http://localhost:4300
+```
 
-### 2. Install k6
+`k6lab setup` looks for an existing k6 first. If there isn't one it downloads
+the official binary from grafana/k6 into `~/.k6lab/bin` — your machine is not
+touched anywhere else, and nothing is installed system-wide.
 
-k6 is a separate binary that does the actual load generation.
+Prefer not to install globally? `npx k6-load-lab setup` then `npx k6-load-lab ui`
+works the same way.
+
+<details>
+<summary>Installing k6 yourself instead</summary>
+
+`k6lab setup` is optional — any k6 on your `PATH` is used as-is.
 
 | Platform | Command |
 | --- | --- |
@@ -34,13 +45,13 @@ k6 is a separate binary that does the actual load generation.
 | Debian / Ubuntu | see <https://grafana.com/docs/k6/latest/set-up/install-k6/> |
 | Any | download from <https://github.com/grafana/k6/releases>, unzip, put it on your `PATH` |
 
-Check with `k6 version`. Anything from **v0.50** upward works; this was built and
-tested against **v2.1.0**.
+Anything from **v0.50** upward works; this is built and tested against **v2.x**.
+Got k6 somewhere off the `PATH`? Point at it: `K6_PATH="C:\tools\k6.exe" k6lab ui`
 
-Got k6 somewhere off the `PATH`? Point at it instead:
-`K6_PATH="C:\tools\k6.exe" k6lab run`
+</details>
 
-### 3. Install k6 Load Lab
+<details>
+<summary>Running from a clone instead of npm</summary>
 
 ```bash
 git clone https://github.com/Hassan-Jamal/K6_LoadTesting_Framework.git
@@ -50,10 +61,12 @@ npm link          # makes `k6lab` available in any folder
 ```
 
 `npm link` needs no admin rights on Windows or macOS. If you would rather not
-install it globally, skip it and call it by path:
+link it, call it by path:
 `node /path/to/K6_LoadTesting_Framework/bin/k6lab.js run`
 
-### 4. Check the setup
+</details>
+
+### Check the setup
 
 ```bash
 k6lab doctor
@@ -63,8 +76,8 @@ k6lab doctor
 Environment
 ────────────────────────────────────────────────────────────
   ✓  node                  v20.11.0
-  ✓  k6                    k6 v2.1.0
-  ✓  web console assets    chart.js vendored
+  ✓  k6                    k6 v2.2.0
+  ✓  web console assets    chart.js 4.5.1
 
   Ready to run.
 ```
@@ -72,14 +85,14 @@ Environment
 `doctor` is the first thing to run whenever something misbehaves — it checks
 Node, k6, the UI assets, and whether the current folder has a usable collection.
 
-### 5. Try it
+### Try it
 
 ```bash
-npm run demo
+k6lab run examples/sample_postman_collection.json --base-url https://test.k6.io --safe --preset smoke --yes
 ```
 
 Runs a smoke test against the public k6 test site and writes a report. If that
-works, the install is good.
+works, the install is good. From a clone, `npm run demo` does the same thing.
 
 ---
 
@@ -338,7 +351,7 @@ server/
   presets.js        load shapes shared by the CLI and the UI
   store.js          the run catalogue on disk
   index.js          HTTP API + WebSocket feed for the web console
-public/             the web console (vanilla JS, Chart.js vendored locally)
+public/             the web console (vanilla JS, Chart.js served from node_modules)
 examples/           a sample collection and config to try against
 ```
 

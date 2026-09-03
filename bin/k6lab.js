@@ -19,6 +19,7 @@ const { Store } = require('../server/store');
 const { buildReport } = require('../server/report');
 const { PRESETS } = require('../server/presets');
 const { openInBrowser } = require('../server/open');
+const { resolveK6, installK6 } = require('../server/k6bin');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -236,6 +237,7 @@ ${c.bold}k6lab${c.reset} - run a Postman collection as a k6 load test
 ${c.bold}USAGE${c.reset}
   k6lab run [collection.json] [options]   run a load test and write a report
   k6lab ui [--port 4300]                  open the web console in your browser
+  k6lab setup                             fetch k6 if it is not already installed
   k6lab init                              write a k6lab.config.json template here
   k6lab list                              list previous runs
   k6lab report [run-id]                   open a run's HTML report
@@ -294,28 +296,56 @@ ${c.bold}EXAMPLES${c.reset}
 `;
 
 function resolveK6Path() {
-  return process.env.K6_PATH || 'k6';
+  const found = resolveK6();
+  return found ? found.path : process.env.K6_PATH || 'k6';
 }
 
 function ensureK6() {
-  const { spawnSync } = require('child_process');
-  const result = spawnSync(resolveK6Path(), ['version'], { encoding: 'utf8', windowsHide: true });
-  if (result.error || result.status !== 0) {
-    out('');
-    out(c.red + 'k6 was not found.' + c.reset);
-    out('');
-    out('  Install it with one of:');
-    out('    ' + c.cyan + 'winget install k6 --source winget' + c.reset + '   (Windows)');
-    out('    ' + c.cyan + 'brew install k6' + c.reset + '                     (macOS)');
-    out('    ' + c.cyan + 'choco install k6' + c.reset + '                    (Windows, Chocolatey)');
-    out('  or download it from https://github.com/grafana/k6/releases');
-    out('');
-    out('  Already installed somewhere else? Point at it:');
-    out('    ' + c.cyan + 'K6_PATH="C:\\tools\\k6.exe" k6lab run' + c.reset);
-    out('');
-    process.exit(127);
+  const found = resolveK6();
+  if (found) {
+    // The server and the runner both read K6_PATH, so pin it to whatever we
+    // just resolved - otherwise a k6 that only lives in ~/.k6lab is invisible.
+    process.env.K6_PATH = found.path;
+    return found.version;
   }
-  return String(result.stdout).trim();
+
+  out('');
+  out(c.red + '  k6 is not installed.' + c.reset);
+  out('');
+  out('  Fetch it automatically:  ' + c.cyan + 'k6lab setup' + c.reset);
+  out('  Or install it yourself:  ' + c.cyan + 'winget install k6 --source winget' + c.reset + c.grey + '  (Windows)' + c.reset);
+  out('                           ' + c.cyan + 'brew install k6' + c.reset + c.grey + '                    (macOS)' + c.reset);
+  out('');
+  process.exit(127);
+}
+
+async function commandSetup(flags) {
+  heading('Setup');
+  const found = resolveK6();
+  if (found && !bool(flags.force, false)) {
+    out('  ' + c.green + '✓' + c.reset + '  k6 already available  ' + c.grey + found.version + c.reset);
+    out('     ' + c.grey + 'from ' + found.source + (found.path !== 'k6' ? ' — ' + found.path : '') + c.reset);
+    out('');
+    out('  Nothing to do. Start the console with ' + c.cyan + 'k6lab ui' + c.reset);
+    out('');
+    return 0;
+  }
+  try {
+    const installed = await installK6((m) => out('  ' + c.grey + m + c.reset), flags.k6Version);
+    out('');
+    out('  ' + c.green + '✓' + c.reset + '  ' + installed.version);
+    out('     ' + c.grey + installed.path + c.reset);
+    out('');
+    out('  Ready. Start the console with ' + c.cyan + 'k6lab ui' + c.reset);
+    out('');
+    return 0;
+  } catch (err) {
+    out('');
+    out(c.red + '  Could not fetch k6: ' + err.message + c.reset);
+    out('  Install it manually instead: https://grafana.com/docs/k6/latest/set-up/install-k6/');
+    out('');
+    return 1;
+  }
 }
 
 async function confirm(question) {
@@ -727,11 +757,23 @@ function commandDoctor() {
       '     Or point at an existing binary: K6_PATH="C:\\tools\\k6.exe"'
   );
 
-  const chartJs = path.join(ROOT, 'public', 'vendor', 'chart.umd.js');
+  // chart.js hides its files behind "exports", so read the version off disk.
+  let chartJs = null;
+  let chartVersion = '';
+  try {
+    const dist = path.dirname(require.resolve('chart.js'));
+    const candidate = path.join(dist, 'chart.umd.js');
+    if (fs.existsSync(candidate)) {
+      chartJs = candidate;
+      chartVersion = JSON.parse(fs.readFileSync(path.join(dist, '..', 'package.json'), 'utf8')).version;
+    }
+  } catch (err) {
+    chartJs = null;
+  }
   check(
     'web console assets',
-    fs.existsSync(chartJs),
-    fs.existsSync(chartJs) ? 'chart.js vendored' : 'chart.js missing',
+    Boolean(chartJs),
+    chartJs ? 'chart.js ' + chartVersion : 'chart.js missing',
     'Run `npm install` in ' + ROOT
   );
 
@@ -840,6 +882,9 @@ async function main() {
     case 'report':
     case 'open':
       return commandReport(positional, flags);
+    case 'setup':
+    case 'install':
+      return await commandSetup(flags);
     case 'doctor':
     case 'check':
       return commandDoctor();
